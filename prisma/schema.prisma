@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model user {
+  id    Int     @id @default(autoincrement())
+  login String  @unique
+  name  String
+  city  String?
+}
+
+model temperature {
+  id      String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
+  user_id Int
+  inside  Float
+  outside Float
+  time    DateTime @default(now())
+}
