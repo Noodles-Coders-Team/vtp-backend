@@ -10,17 +10,96 @@ datasource db {
   provider = "postgresql"
 }
 
-model user {
-  id    Int     @id @default(autoincrement())
-  login String  @unique
-  name  String
-  city  String?
+model games {
+  id             String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
+  name           String
+  release_date   DateTime?
+  link           String?
+  discussed      Boolean
+  can_record     Boolean
+  recorded       Boolean
+  rank           rank[]
+  post           post[]
 }
 
-model temperature {
-  id      String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
-  user_id Int
-  inside  Float
-  outside Float
-  time    DateTime @default(now())
+model rank {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
+  game_id    String
+  version_id Int
+  date       DateTime
+  rank       Float
+  games      games    @relation(fields: [game_id], references: [id])
+}
+
+model post {
+  id              String   @id
+  game_id         String
+  publication_time DateTime
+  games           games    @relation(fields: [game_id], references: [id])
+  post_information post_information[]
+}
+
+model post_information {
+  id                                String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
+  version_id                        Int
+  import_date                       DateTime
+  category                          String
+  video_id                          String
+  video_title                       String
+  publish_time                      DateTime
+  duration                          Int
+  engaged_views                     Int
+  average_view_duration             String
+  average_percentage_viewed_percent Float
+  stayed_to_watch_percent           Float
+  unique_viewers                    Int
+  unique_reach                      Int
+  average_views_per_viewer          Float
+  new_viewers                       Int
+  returning_viewers                 Int
+  casual_viewers                    Int
+  regular_viewers                   Int
+  hypes                             Int
+  hype_points                       Int
+  subscribers_gained                Int
+  subscribers_lost                  Int
+  likes                             Int
+  dislikes                          Int
+  likes_vs_dislikes_percent         Float
+  shares                            Int
+  comments_added                    Int
+  total_sales_usd                   Float
+  orders                            Int
+  approved_commissions_usd          Float
+  pending_commissions_usd           Float
+  removed_commission_usd            Float
+  youtube_premium_views             Int
+  youtube_premium_watch_time_hours  Float
+  playlist_watch_time_hours         Float
+  views_from_playlist               Int
+  views_per_playlist_start          Float
+  hours_streamed                    Float
+  reminders_set                     Int
+  chat_messages                     Int
+  reactions                         Int
+  remix_count                       Int
+  remix_views                       Int
+  community_clip_views              Int
+  watch_time_from_community_clips_hours Float
+  card_clicks                       Int
+  cards_shown                       Int
+  clicks_per_card_shown_percent     Float
+  post_id                           String
+  post                              post     @relation(fields: [post_id], references: [id])
+}
+
+model channel_data {
+  id    DateTime @id
+  views Int
+}
+
+model users {
+  login           String   @id
+  user_name       String?
+  permission_level String?
 }
