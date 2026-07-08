@@ -37,7 +37,7 @@ model post {
 model post_information {
   id                                String   @id @default(dbgenerated("(gen_random_uuid())::TEXT"))
   version_id                        Int
-  import_date                       DateTime
+  import_date                       DateTime @default(now())
   category                          String
   video_id                          String
   video_title                       String
