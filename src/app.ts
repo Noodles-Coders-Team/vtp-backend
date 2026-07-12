@@ -1,7 +1,10 @@
 import cors from 'cors';
 import express from 'express';
 import usersRouter from './routes/users';
-import temperatureRouter from './routes/temperature';
+import gamesRouter from './routes/games';
+import postRouter from './routes/post';
+import postInformationRouter from './routes/post_information';
+import rankRouter from './routes/rank';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 // import { validate } from './middleware/validate';
@@ -18,10 +21,13 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/users', usersRouter);
+app.use('/games', gamesRouter);
+app.use('/post', postRouter);
+app.use('/post/information', postInformationRouter);
+app.use('/rank', rankRouter);
 // Another wy for adding validation
 //app.use('/users', validate(CreateUserSchema), usersRouter);
 
-app.use('/temperature', temperatureRouter);
 
 app.get('/', (request, response) => {
     console.info('Get to page');
