@@ -1,6 +1,7 @@
 import { Router } from "express";
-import prisma from "../lib/prisma";
-
+import p from "../lib/prisma";
+import { createGame, deleteGame, getAllGames, getGameById, updateGame } from "../services/gameService";
+const prisma = p.prisma;
 const router = Router();
 
 /**
@@ -36,8 +37,7 @@ const router = Router();
  *                     type: boolean
  */
 router.get('/', async (request, response) => {
-    const allGames = await prisma.prisma.games.findMany();
-    console.log("All games: ", JSON.stringify(allGames, null, 2));
+    const allGames = await getAllGames();
     response.json(allGames);
 });
 
@@ -78,11 +78,7 @@ router.get('/', async (request, response) => {
  *                   type: boolean
  */
 router.get('/:id', async (request, response) => {
-    const gameId = request.params.id;
-    const game = await prisma.prisma.games.findUnique({
-        where: { id: gameId }
-    });
-    console.log("Game: ", JSON.stringify(game, null, 2));
+    const game = await getGameById(request.params.id)
     response.json(game);
 });
 
@@ -138,11 +134,7 @@ router.get('/:id', async (request, response) => {
  *                   type: boolean
  */
 router.post('/', async (request, response) => {
-    const game = request.body;
-    console.log("Creating game: ", JSON.stringify(game, null, 2));
-    const createdGame = await prisma.prisma.games.create({
-        data: game
-    });
+    const createdGame = await createGame(request.body);
     response.status(201).json(createdGame);
 });
 
@@ -203,13 +195,7 @@ router.post('/', async (request, response) => {
  *                   type: boolean
  */
 router.put('/:id', async (request, response) => {
-    const gameId = request.params.id;
-    const game = request.body;
-    console.log("Updating game with ID: ", gameId, " with data: ", JSON.stringify(game, null, 2));
-    const updatedGame = await prisma.prisma.games.update({
-        where: { id: gameId },
-        data: game
-    });
+    const updatedGame = await updateGame(request.params.id, request.body);
     response.status(200).json(updatedGame);
 });
 
@@ -234,11 +220,7 @@ router.put('/:id', async (request, response) => {
  *               type: object
  */
 router.delete('/:id', async (request, response) => {
-    const gameId = request.params.id;
-    console.log("Deleting game with ID: ", gameId);
-    const deletedGame = await prisma.prisma.games.delete({
-        where: { id: gameId }
-    });
+    const deletedGame = await deleteGame(request.body.id);
     response.status(200).json(deletedGame);
 });
 

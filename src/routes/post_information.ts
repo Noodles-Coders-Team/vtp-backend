@@ -137,7 +137,7 @@ const router = Router();
  *                     type: string
  */
 router.get('/', async (request, response) => {
-    const allPostInformations = await prisma.prisma.post_information.findMany();
+    const allPostInformations = await prisma.prisma.postInformation.findMany();
     console.log("All post informations: ", JSON.stringify(allPostInformations, null, 2));
     response.json(allPostInformations);
 });
@@ -281,7 +281,7 @@ router.get('/', async (request, response) => {
  */
 router.get('/:id', async (request, response) => {
     const postInformationId = request.params.id;
-    const postInformation = await prisma.prisma.post_information.findUnique({
+    const postInformation = await prisma.prisma.postInformation.findUnique({
         where: { id: postInformationId }
     });
     console.log("Post information: ", JSON.stringify(postInformation, null, 2));
@@ -544,7 +544,7 @@ router.get('/:id', async (request, response) => {
 router.post('/', async (request, response) => {
     const postInformation = request.body;
     console.log("Creating post information: ", JSON.stringify(postInformation, null, 2));
-    const createdPostInformation = await prisma.prisma.post_information.create({
+    const createdPostInformation = await prisma.prisma.postInformation.create({
         data: postInformation
     });
     response.status(201).json(createdPostInformation);
@@ -812,7 +812,7 @@ router.put('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     const postInformation = request.body;
     console.log("Updating post information with ID: ", postInformationId, " with data: ", JSON.stringify(postInformation, null, 2));
-    const updatedPostInformation = await prisma.prisma.post_information.update({
+    const updatedPostInformation = await prisma.prisma.postInformation.update({
         where: { id: postInformationId },
         data: postInformation
     });
@@ -842,7 +842,7 @@ router.put('/:id', async (request, response) => {
 router.delete('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     console.log("Deleting post information with ID: ", postInformationId);
-    const deletedPostInformation = await prisma.prisma.post_information.delete({
+    const deletedPostInformation = await prisma.prisma.postInformation.delete({
         where: { id: postInformationId }
     });
     response.status(200).json(deletedPostInformation);

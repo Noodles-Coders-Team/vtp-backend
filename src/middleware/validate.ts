@@ -1,7 +1,7 @@
 import { ZodSchema } from "zod";
 import { Request, Response, NextFunction } from "express";
 
-export function validate(schema: ZodSchema) {
+export function validateRequest(schema: ZodSchema) {
     return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.body);
         if (!result.success) {
@@ -11,3 +11,11 @@ export function validate(schema: ZodSchema) {
         next();
     }
 };
+
+export function validateSchema(body: any, schema: ZodSchema){
+    const result = schema.safeParse(body);
+    if (!result.success) {
+        throw new Error(__filename + ': validation error ' + result.error)
+    }
+    return result.data;
+}

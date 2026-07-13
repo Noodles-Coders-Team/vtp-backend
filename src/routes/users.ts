@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CreateUserSchema } from "@nct/vtp-common";
-import { validate } from "../middleware/validate";
+import { validateRequest } from "../middleware/validate";
 import prisma from "../lib/prisma";
 
 const router = Router();
@@ -115,7 +115,7 @@ router.get('/:id', async (request, response) => {
  *                   type: string
  *                   nullable: true
  */
-router.post('/create', validate(CreateUserSchema), async (request, response) => {
+router.post('/create', validateRequest(CreateUserSchema), async (request, response) => {
     const user = request.body;
     console.log("Creating user: ", JSON.stringify(user, null, 2));
     const createdUser = await prisma.prisma.users.create({
