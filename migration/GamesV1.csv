@@ -1,4 +1,4 @@
-Название игры,Id,Дата обновления,Выпусков,Просмотры,Название видео,Очередь,Реклама,Можно снимать,Обсужденно,Жанр, Тэги,Заметки
+GameName,Id,UpdateDate,NumberOfEpisodes,Views,Video Title,Queue,Ads,CanRecord,Discussed,Genre,Tags,Notes
 Cursed Companions,73,08.06.2026,,,,,FALSE,TRUE,TRUE,"Adventure, Action","Coop, Переёб записи",
 Просто онлайн викторина,38,,,,,,FALSE,FALSE,TRUE,,"Скучно, Не монтируется",Гена тупой
 BRAZILIAN DRUG DEALER 3: I OPENED A PORTAL TO HELL IN THE FAVELA TRYING TO REVIVE MIT AIA I NEED TO CLOSE IT,73,08.06.2026,,,,,FALSE,TRUE,TRUE,Rpg,"Переёб записи, Coop, PVP",Мем
