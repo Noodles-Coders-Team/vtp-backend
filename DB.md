@@ -3,14 +3,22 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
-Table games{
+Table game{
   id guid [primary key]
   name varchar
   release_date date
   link varchar
+  recorded bool
+}
+
+Table game_info{
+  id guid [primary key]
+  game_id guid
   discussed bool
   can_record bool
-  recorded bool
+  genre varchar[]
+  tags varchar[]
+  notes varchar
 }
 
 Table rank{
@@ -27,7 +35,7 @@ Table post{
   publication_time datetime
 }
 
-Table post_information{
+Table post_info{
   id guid [primary key]
   version_id int
   import_date datetime
@@ -90,6 +98,7 @@ Table users{
   permission_level varchar // Edit & View only?
 }
 
-ref games_used_in_video:  post.game_id > games.id // Many to one
-ref:  post.id < post_information.video_id
-ref games_ranking: rank.game_id > games.id 
+ref game_used_in_video:  post.game_id > game.id // Many to one
+ref:  post.id < post_info.video_id
+ref game_ranking: rank.game_id > game.id 
+ref games_information: game_info.game_id > game.id
