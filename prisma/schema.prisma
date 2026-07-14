@@ -41,7 +41,6 @@ model GameInformation {
 model Rank {
   id         String   @id @default(uuid())
   game_id    String
-  version_id Int
   date       DateTime
   rank       Float // Kept as 'rank' but mapped to Float; Prisma allows field names matching DBML columns
 
@@ -63,7 +62,6 @@ model Post {
 
 model PostInformation {
   id          String   @id @default(uuid())
-  version_id  Int
   import_date DateTime
   category    String // Video Shorts or Post, determined on data import
   video_id    String

@@ -24,7 +24,6 @@ Table game_info{
 Table rank{
   id guid [primary key]
   game_id guid
-  version_id int
   date datetime
   rank float
 }
@@ -37,7 +36,6 @@ Table post{
 
 Table post_info{
   id guid [primary key]
-  version_id int
   import_date datetime
   category varchar // Video Shorts or Post, determined on data import
   video_id varchar

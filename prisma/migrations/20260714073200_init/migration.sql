@@ -26,7 +26,6 @@ CREATE TABLE "game_info" (
 CREATE TABLE "rank" (
     "id" TEXT NOT NULL,
     "game_id" TEXT NOT NULL,
-    "version_id" INTEGER NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "rank" DOUBLE PRECISION NOT NULL,
 
@@ -45,7 +44,6 @@ CREATE TABLE "post" (
 -- CreateTable
 CREATE TABLE "post_info" (
     "id" TEXT NOT NULL,
-    "version_id" INTEGER NOT NULL,
     "import_date" TIMESTAMP(3) NOT NULL,
     "category" TEXT NOT NULL,
     "video_id" TEXT NOT NULL,

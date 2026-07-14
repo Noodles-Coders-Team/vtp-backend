@@ -1,4 +1,25 @@
+import { GameDto, GameInfoDto, GameInfoSchema, GameSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
 import { GameCsv } from "../lib/class";
-export async function importGameCsv(gameCsv: GameCsv[]){
+import { createGame } from "./gameService";
+import { createGameInfo } from "./gameInfoService";
+import { _isoDateTime } from "zod/v4/core";
 
+
+export async function importGameCsv(gameCsv: GameCsv[]) {
+    gameCsv.forEach(async (game: GameCsv) => {
+        const createGameSchema: CreateGameDto = {
+            name: game.GameName,
+            recorded: false,
+        };
+        const createdGame: GameDto = GameSchema.parse(await createGame(createGameSchema));
+
+        const createGameInfoSchema: CreateGameInfoDto = {
+            game_id: createdGame.id,
+            discussed: game.Discussed,
+            can_record: game.CanRecord
+        }
+
+        const createdInfo: GameInfoDto = GameInfoSchema.parse(await createGameInfo(createGameInfoSchema));
+        console.log(`Game info created for the game ${createGame.name} with id ${createdInfo.id}`);
+    });
 }
