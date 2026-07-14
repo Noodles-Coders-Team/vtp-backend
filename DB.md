@@ -99,4 +99,4 @@ Table users{
 ref game_used_in_video:  post.game_id > game.id // Many to one
 ref:  post.id < post_info.video_id
 ref game_ranking: rank.game_id > game.id 
-ref games_information: game_info.game_id > game.id
+ref: game.id < game_info.game_id

@@ -18,7 +18,7 @@ model Game {
   recorded     Boolean
 
   ranks      Rank[]
-  game_infos GameInformation[]
+  game_info GameInformation?
   posts      Post[]
 
   @@map("game")
@@ -26,7 +26,7 @@ model Game {
 
 model GameInformation {
   id         String   @id @default(uuid())
-  game_id    String
+  game_id    String   @unique
   discussed  Boolean
   can_record Boolean
   genre      String[] // DBML 'varchar[]' maps to String[]

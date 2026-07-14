@@ -112,6 +112,9 @@ CREATE TABLE "users" (
     CONSTRAINT "users_pkey" PRIMARY KEY ("login")
 );
 
+-- CreateIndex
+CREATE UNIQUE INDEX "game_info_game_id_key" ON "game_info"("game_id");
+
 -- AddForeignKey
 ALTER TABLE "game_info" ADD CONSTRAINT "game_info_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

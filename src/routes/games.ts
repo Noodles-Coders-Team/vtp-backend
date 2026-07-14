@@ -1,6 +1,6 @@
 import { Router } from "express";
 import p from "../lib/prisma";
-import { createGame, deleteGame, getAllGames, getGameById, updateGame } from "../services/gameService";
+import { createGame, deleteGame, getAllGames, getAllGamesWithInfo, getGameById, updateGame } from "../services/gameService";
 const prisma = p.prisma;
 const router = Router();
 
@@ -39,6 +39,11 @@ const router = Router();
 router.get('/', async (request, response) => {
     const allGames = await getAllGames();
     response.json(allGames);
+});
+
+router.get('/with-info', async (request, response) => {
+    const allGamesWithInfo = await getAllGamesWithInfo();
+    response.json(allGamesWithInfo);
 });
 
 /**

@@ -1,4 +1,4 @@
-import { CreateGameDto, CreateGameSchema, GameDto, GameSchema } from "@nct/vtp-common";
+import { CreateGameDto, CreateGameSchema, GameDto, GameSchema, GameWithInfoSchema } from "@nct/vtp-common";
 import p from "../lib/prisma";
 import { validateSchema } from "../middleware/validate";
 import { Prisma__GameClient } from "../generated/prisma/models";
@@ -6,15 +6,21 @@ const prisma = p.prisma;
 
 export async function getAllGames() {
     const allGames = await prisma.game.findMany({ orderBy: { name: "asc" } });
-    console.log("All games: ", JSON.stringify(allGames, null, 2));
     return allGames;
+}
+
+export async function getAllGamesWithInfo() {
+    const allGamesWithInfo = await prisma.game.findMany({
+        orderBy: { name: "asc" },
+        include: { game_info: true }
+    });
+    return allGamesWithInfo;
 }
 
 export async function getGameById(gameId: string) {
     const game = await prisma.game.findUnique({
         where: { id: gameId }
     });
-    console.log("Game: ", JSON.stringify(game, null, 2));
     return game;
 }
 
