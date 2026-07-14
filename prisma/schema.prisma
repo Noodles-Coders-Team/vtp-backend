@@ -13,7 +13,7 @@ datasource db {
 model Game {
   id           String   @id @default(uuid())
   name         String
-  release_date DateTime
+  release_date DateTime?
   link         String?
   recorded     Boolean
 

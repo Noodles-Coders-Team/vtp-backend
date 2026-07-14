@@ -6,17 +6,19 @@ const prisma = p.prisma;
 export async function createGameInfo(body: any) {
     const gameInfo = validateSchema(body, CreateGameInfoSchema) as CreateGameInfoDto;
 
-    const existingInfo = prisma.gameInformation.findFirst({ where: { game_id: gameInfo.game_id } });
+    const existingInfo = await prisma.gameInformation.findFirst({ where: { game_id: gameInfo.game_id } });
     if (existingInfo === null) {
-        console.log("Creating game info: ", JSON.stringify(gameInfo, null, 2));
+        console.log(`Creating game info for game id: ${gameInfo.game_id}`);
 
         const createdInfo = await prisma.gameInformation.create({
-            data: body
+            data: gameInfo
         });
         return createdInfo;
     }
     else {
-        return updateGameInfo(gameInfo);
+        if (existingInfo.notes === null)
+            existingInfo.notes = "";
+        return updateGameInfo(existingInfo);
     }
 }
 

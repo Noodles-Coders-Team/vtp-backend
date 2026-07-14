@@ -15,7 +15,7 @@ export function validateRequest(schema: ZodSchema) {
 export function validateSchema(body: any, schema: ZodSchema){
     const result = schema.safeParse(body);
     if (!result.success) {
-        throw new Error(__filename + ': validation error ' + result.error)
+        throw new Error('Validation error ' + result.error + '\nFor body:\n' + JSON.stringify(body, null, 2));
     }
     return result.data;
 }

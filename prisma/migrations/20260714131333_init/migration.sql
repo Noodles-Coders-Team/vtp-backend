@@ -2,7 +2,7 @@
 CREATE TABLE "game" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "release_date" TIMESTAMP(3) NOT NULL,
+    "release_date" TIMESTAMP(3),
     "link" TEXT,
     "recorded" BOOLEAN NOT NULL,
 

@@ -26,7 +26,7 @@ router.post('/game',
             
             fs.createReadStream(request.file.path)
             .pipe(csv())
-            .on("data", (data: GameCsv) => console.log(`Importing row ${results.push(data)}`))
+            .on("data", (data: GameCsv) => results.push(data))
             .on("end", resolve)
             .on("error", reject)
         });

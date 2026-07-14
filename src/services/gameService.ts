@@ -26,14 +26,14 @@ export async function createGame(body: any) {
         }
     });
     if (existingGame === null) {
-        console.log("Creating game: ", JSON.stringify(body, null, 2));
+        console.log(`Creating game: ${game.name}`);
         const createdGame = await prisma.game.create({
             data: body
         });
         return createdGame;
     }
     else{
-        console.log("Game already exist: ", JSON.stringify(existingGame, null, 2));
+        console.log(`${existingGame.name} already exist with id: ${existingGame.id}`);
         return existingGame;
     }
 }
