@@ -1,4 +1,6 @@
+import { CreateGameDto, CreateGameSchema } from "@nct/vtp-common";
 import p from "../lib/prisma";
+import { validateSchema } from "../middleware/validate";
 const prisma = p.prisma;
 
 export async function getAllGames() {
@@ -16,11 +18,23 @@ export async function getGameById(gameId: string) {
 }
 
 export async function createGame(body: any) {
-    console.log("Creating game: ", JSON.stringify(body, null, 2));
-    const createdGame = await prisma.game.create({
-        data: body
+    const game = validateSchema(body, CreateGameSchema) as CreateGameDto;
+    const existingGame = await prisma.game.findFirst({
+        where: {
+            name: game.name
+        }
     });
-    return createdGame;
+    if (existingGame === null) {
+        console.log("Creating game: ", JSON.stringify(body, null, 2));
+        const createdGame = await prisma.game.create({
+            data: body
+        });
+        return createdGame;
+    }
+    else{
+        console.log("Game already exist: ", JSON.stringify(existingGame, null, 2));
+        return existingGame;
+    }
 }
 
 export async function updateGame(id: string, game_body: any) {
