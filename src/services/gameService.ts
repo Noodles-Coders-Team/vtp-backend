@@ -5,7 +5,7 @@ import { Prisma__GameClient } from "../generated/prisma/models";
 const prisma = p.prisma;
 
 export async function getAllGames() {
-    const allGames = await prisma.game.findMany();
+    const allGames = await prisma.game.findMany({ orderBy: { name: "asc" } });
     console.log("All games: ", JSON.stringify(allGames, null, 2));
     return allGames;
 }
@@ -32,7 +32,7 @@ export async function createGame(body: any) {
         });
         return createdGame;
     }
-    else{
+    else {
         console.log(`${existingGame.name} already exist with id: ${existingGame.id}`);
         return existingGame;
     }
