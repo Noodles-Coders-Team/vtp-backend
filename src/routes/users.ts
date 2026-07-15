@@ -33,7 +33,6 @@ const router = Router();
  */
 router.get('/', async (request, response) => {
     const allUsers = await prisma.prisma.users.findMany();
-    console.log("All users: ", JSON.stringify(allUsers, null, 2));
     response.json(allUsers);
 });
 
@@ -72,7 +71,6 @@ router.get('/', async (request, response) => {
 router.get('/:id', async (request, response) => {
     const userId = request.params.id;
     const allUsers = await prisma.prisma.users.findFirst({where: {login: userId}});
-    console.log("All users: ", JSON.stringify(allUsers, null, 2));
     response.json(allUsers);
 });
 

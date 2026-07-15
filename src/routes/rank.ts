@@ -34,7 +34,6 @@ const router = Router();
  */
 router.get('/', async (request, response) => {
     const allRanks = await prisma.prisma.rank.findMany();
-    console.log("All ranks: ", JSON.stringify(allRanks, null, 2));
     response.json(allRanks);
 });
 
@@ -76,7 +75,6 @@ router.get('/:id', async (request, response) => {
     const rank = await prisma.prisma.rank.findUnique({
         where: { id: rankId }
     });
-    console.log("Rank: ", JSON.stringify(rank, null, 2));
     response.json(rank);
 });
 
@@ -127,7 +125,6 @@ router.get('/:id', async (request, response) => {
  */
 router.post('/', async (request, response) => {
     const rank = request.body;
-    console.log("Creating rank: ", JSON.stringify(rank, null, 2));
     const createdRank = await prisma.prisma.rank.create({
         data: rank
     });

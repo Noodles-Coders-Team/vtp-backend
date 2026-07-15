@@ -29,7 +29,6 @@ const router = Router();
  */
 router.get('/', async (request, response) => {
     const allPosts = await prisma.prisma.post.findMany();
-    console.log("All posts: ", JSON.stringify(allPosts, null, 2));
     response.json(allPosts);
 });
 
@@ -66,7 +65,6 @@ router.get('/:id', async (request, response) => {
     const post = await prisma.prisma.post.findUnique({
         where: { id: postId }
     });
-    console.log("Post: ", JSON.stringify(post, null, 2));
     response.json(post);
 });
 

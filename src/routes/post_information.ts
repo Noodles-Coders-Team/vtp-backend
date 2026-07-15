@@ -138,7 +138,6 @@ const router = Router();
  */
 router.get('/', async (request, response) => {
     const allPostInformations = await prisma.prisma.postInformation.findMany();
-    console.log("All post informations: ", JSON.stringify(allPostInformations, null, 2));
     response.json(allPostInformations);
 });
 
@@ -284,7 +283,6 @@ router.get('/:id', async (request, response) => {
     const postInformation = await prisma.prisma.postInformation.findUnique({
         where: { id: postInformationId }
     });
-    console.log("Post information: ", JSON.stringify(postInformation, null, 2));
     response.json(postInformation);
 });
 
