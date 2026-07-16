@@ -12,6 +12,8 @@ import { swaggerSpec } from './config/swagger';
 // import { CreateUserSchema } from './schemas/user';
 
 const app = express();
+app.use(express.json());
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(cors({
@@ -19,7 +21,6 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
-app.use(express.json());
 
 app.use('/users', usersRouter);
 app.use('/games', gamesRouter);

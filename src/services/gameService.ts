@@ -9,10 +9,19 @@ export async function getAllGames() {
     return allGames;
 }
 
-export async function getAllGamesWithInfo() {
+export async function getAllGamesWithInfo(can_record: boolean | null, discussed: boolean | null) {
     const allGamesWithInfo = await prisma.game.findMany({
         orderBy: { name: "asc" },
-        include: { game_info: true }
+        include: {
+            game_info: true
+        },
+        where: {
+            game_info: {
+                ...(can_record !== null && {can_record: can_record}),
+                ...(discussed !== null && {discussed: discussed}),
+            }
+        }
+        
     });
     return allGamesWithInfo;
 }

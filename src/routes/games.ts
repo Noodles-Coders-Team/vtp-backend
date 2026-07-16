@@ -41,8 +41,10 @@ router.get('/', async (request, response) => {
     response.json(allGames);
 });
 
-router.get('/with-info', async (request, response) => {
-    const allGamesWithInfo = await getAllGamesWithInfo();
+router.post('/with-info', async (request, response) => {
+    console.log(request.body);
+    const { can_record, discussed } = request.body;
+    const allGamesWithInfo = await getAllGamesWithInfo(can_record, discussed);
     response.json(allGamesWithInfo);
 });
 
