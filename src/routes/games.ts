@@ -1,6 +1,7 @@
-import { Router } from "express";
+import { response, Router } from "express";
 import p from "../lib/prisma";
 import { createGame, deleteGame, getAllGames, getAllGamesWithInfo, getGameById, updateGame } from "../services/gameService";
+import { updateGameInfo } from "../services/gameInfoService";
 const prisma = p.prisma;
 const router = Router();
 
@@ -203,6 +204,11 @@ router.post('/create', async (request, response) => {
 router.put('/:id', async (request, response) => {
     const updatedGame = await updateGame(request.params.id, request.body);
     response.status(200).json(updatedGame);
+});
+
+router.put('/info', async (request, response) => {
+   const updatedGameInfo = await updateGameInfo(request.body);
+   response.status(200).json(updatedGameInfo);
 });
 
 /**
