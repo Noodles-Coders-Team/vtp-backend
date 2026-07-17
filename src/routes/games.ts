@@ -30,15 +30,15 @@ router.post('/create', async (request, response) => {
 });
 
 
-router.put('/:id', async (request, response) => {
-    const updatedGame = await updateGame(request.params.id, request.body);
-    response.status(200).json(updatedGame);
-});
-
-
 router.put('/info', async (request, response) => {
    const updatedGameInfo = await updateGameInfo(request.body);
    response.status(200).json(updatedGameInfo);
+});
+
+
+router.put('/:id', async (request, response) => {
+    const updatedGame = await updateGame(request.params.id, request.body);
+    response.status(200).json(updatedGame);
 });
 
 
