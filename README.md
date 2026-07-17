@@ -1,10 +1,10 @@
 # NCT
-This is simple Node.js + Express + Prisma front end site. Depends on [weather-common](https://github.com/Noodles-Coders-Team/weather-common) and uses [weather-frontend](https://github.com/Noodles-Coders-Team/weather-frontend) as frontend
+This is simple Node.js + Express + Prisma front end site. Depends on [vtp-common](https://github.com/Noodles-Coders-Team/vtp-common) and uses [vtp-front](https://github.com/Noodles-Coders-Team/vtp-front) as frontend
 
 # After update
 After new commits awailable don't forget to update local instalations:
-* `npm install`
-* `npx prisma generate`
+* `npm install` - if `package.json` was updated
+* `npx prisma generate` - if `prisma.schema` was updated
 
 # Node.JS
 Install dependencies locally by running `npm install`. After that generate prisma cache using `npx prisma generate`.
@@ -12,7 +12,7 @@ Install dependencies locally by running `npm install`. After that generate prism
 To start backend server run: `npm run dev`.
 
 **NOTE:**
-In case `@nct/weather-common is missing` locate [weather-common](https://github.com/Noodles-Coders-Team/weather-common) repository and follow `README.md`
+In case `@nct/vtp-common is missing` locate [vtp-common](https://github.com/Noodles-Coders-Team/vtp-common) repository and follow `README.md`
 
 # Prisma
 

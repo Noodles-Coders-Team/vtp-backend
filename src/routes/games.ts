@@ -42,7 +42,6 @@ router.get('/', async (request, response) => {
 });
 
 router.post('/with-info', async (request, response) => {
-    console.log(request.body);
     const { can_record, discussed } = request.body;
     const allGamesWithInfo = await getAllGamesWithInfo(can_record, discussed);
     response.json(allGamesWithInfo);
@@ -140,7 +139,7 @@ router.get('/:id', async (request, response) => {
  *                 recorded:
  *                   type: boolean
  */
-router.post('/', async (request, response) => {
+router.post('/create', async (request, response) => {
     const createdGame = await createGame(request.body);
     response.status(201).json(createdGame);
 });

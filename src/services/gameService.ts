@@ -1,7 +1,7 @@
-import { CreateGameDto, CreateGameSchema, GameDto, GameSchema, GameWithInfoSchema } from "@nct/vtp-common";
+import { CreateGameSchema, GameDto, GameInfoDto } from "@nct/vtp-common";
 import p from "../lib/prisma";
 import { validateSchema } from "../middleware/validate";
-import { Prisma__GameClient } from "../generated/prisma/models";
+import { createGameInfo } from "./gameInfoService";
 const prisma = p.prisma;
 
 export async function getAllGames() {
@@ -40,17 +40,25 @@ export async function createGame(body: any) {
             name: game.name
         }
     });
+    let gameToReturn;
     if (existingGame === null) {
         console.log(`Creating game: ${game.name}`);
         const createdGame = await prisma.game.create({
             data: body
         });
-        return createdGame;
+        gameToReturn = createdGame;
     }
     else {
         console.log(`${existingGame.name} already exist with id: ${existingGame.id}`);
-        return existingGame;
+        gameToReturn = existingGame;
     }
+    createGameInfo({
+        game_id: gameToReturn.id,
+        discussed: false,
+        can_record: false,
+        notes: ''
+    } as GameInfoDto);
+    return gameToReturn;
 }
 
 export async function updateGame(id: string, game_body: any) {
