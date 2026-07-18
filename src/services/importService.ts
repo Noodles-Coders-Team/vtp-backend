@@ -1,8 +1,9 @@
-import { GameDto, GameInfoDto, GameInfoSchema, GameSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
-import { GameCsv } from "../lib/class";
+import { ChannelDataDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
+import { ChannelDataCsv, GameCsv } from "../lib/class";
 import { createGame } from "./gameService";
 import { createGameInfo } from "./gameInfoService";
 import { _isoDateTime } from "zod/v4/core";
+import { createChannelData } from "./chanelDataService";
 
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
@@ -26,8 +27,22 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
     });
 }
 
+
 function stringToBool(val: any): boolean{
     if(val === "TRUE")
         return true;
     return false;
+}
+
+
+export async function importChannelDataCsv(channel_data: ChannelDataCsv[]){
+    channel_data.forEach(async (data: ChannelDataCsv) => {
+        const channelDataDto: ChannelDataDto = {
+            id: data.Date,
+            views: data.Views
+        };
+
+        const created = await createChannelData(channelDataDto);
+        console.log(`Channel Data created/updated for the date: ${created.id}`);
+    });
 }

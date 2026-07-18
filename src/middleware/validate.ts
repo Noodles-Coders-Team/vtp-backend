@@ -12,10 +12,10 @@ export function validateRequest(schema: ZodSchema) {
     }
 };
 
-export function validateSchema(body: any, schema: ZodSchema){
+export function validateSchema<T>(body: any, schema: ZodSchema): T{
     const result = schema.safeParse(body);
     if (!result.success) {
         throw new Error('Validation error ' + result.error + '\nFor body:\n' + JSON.stringify(body, null, 2));
     }
-    return result.data;
+    return result.data as T;
 }

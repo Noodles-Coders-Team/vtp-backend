@@ -1,8 +1,7 @@
-import { response, Router } from "express";
-import p from "../lib/prisma";
+import { Router } from "express";
 import { createGame, deleteGame, getAllGames, getAllGamesWithInfo, getGameById, updateGame } from "../services/gameService";
 import { updateGameInfo } from "../services/gameInfoService";
-const prisma = p.prisma;
+import { validateRequest } from "../middleware/validate";
 const router = Router();
 
 
@@ -31,8 +30,8 @@ router.post('/create', async (request, response) => {
 
 
 router.put('/info', async (request, response) => {
-   const updatedGameInfo = await updateGameInfo(request.body);
-   response.status(200).json(updatedGameInfo);
+    const updatedGameInfo = await updateGameInfo(request.body);
+    response.status(200).json(updatedGameInfo);
 });
 
 

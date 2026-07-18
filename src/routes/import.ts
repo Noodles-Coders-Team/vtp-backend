@@ -1,12 +1,10 @@
-import { GameCsv } from "../lib/class";
+import { ChannelDataCsv, GameCsv } from "../lib/class";
 import { Router } from "express";
 import multer from "multer";
 import csv from "csv-parser";
 import fs from "fs";
 
-import p from "../lib/prisma";
-import { importGameCsv } from "../services/importService";
-const prisma = p.prisma;
+import { importChannelDataCsv, importGameCsv } from "../services/importService";
 const router = Router();
 
 
@@ -20,15 +18,15 @@ router.post('/game',
 
         let results: GameCsv[] = [];
         await new Promise<void>((resolve, reject) => {
-            if (!request.file){
+            if (!request.file) {
                 return;
             }
-            
+
             fs.createReadStream(request.file.path)
-            .pipe(csv())
-            .on("data", (data: GameCsv) => results.push(data))
-            .on("end", resolve)
-            .on("error", reject)
+                .pipe(csv())
+                .on("data", (data: GameCsv) => results.push(data))
+                .on("end", resolve)
+                .on("error", reject)
         });
 
         fs.unlinkSync(request.file!.path);
@@ -39,5 +37,35 @@ router.post('/game',
             data: results
         });
     });
+
+
+router.post('/channel-data',
+    upload.single("file"),
+    async (request, response) => {
+        if (!request.file)
+            return response.status(400).json({ error: "No File uploaded" });
+
+        let results: ChannelDataCsv[] = [];
+        await new Promise<void>((resolve, reject) => {
+            if (!request.file) {
+                return;
+            }
+
+            fs.createReadStream(request.file.path)
+                .pipe(csv())
+                .on("data", (data: ChannelDataCsv) => results.push(data))
+                .on("end", resolve)
+                .on("error", reject)
+        });
+
+        fs.unlinkSync(request.file!.path);
+        console.log(`Import file read, length: ${results.length}, with first entry: ${results[0]}`)
+        await importChannelDataCsv(results);
+        response.json({
+            rows: results.length,
+            data: results
+        });
+    });
+
 
 export default router;

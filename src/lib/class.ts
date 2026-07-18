@@ -13,3 +13,8 @@ export interface GameCsv {
     Tags: string,
     Notes: string,
 }
+
+export interface ChannelDataCsv{
+    Date: string,
+    Views: number
+}

@@ -1,10 +1,3 @@
-/**
- * @file Post Routes
- * @description API routes for managing posts including CRUD operations
- * @author VTP Team
- * @version 1.0.0
- */
-
 import { Router } from "express";
 import prisma from "../lib/prisma";
 
