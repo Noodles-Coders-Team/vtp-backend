@@ -1,16 +1,16 @@
-import { ChannelDataCsv, GameCsv } from "../lib/class";
+import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/class";
 import { Router } from "express";
 import multer from "multer";
 import csv from "csv-parser";
 import fs from "fs";
 
-import { importChannelDataCsv, importGameCsv } from "../services/importService";
+import { importChannelDataCsv, importGameCsv, importTableDataCsv } from "../services/importService";
 const router = Router();
 
 
 const upload = multer({ dest: "uploads/" })
 
-router.post('/game',
+router.post('/games',
     upload.single("file"),
     async (request, response) => {
         if (!request.file)
@@ -67,5 +67,33 @@ router.post('/channel-data',
         });
     });
 
+    
+router.post('/table-data',
+    upload.single("file"),
+    async (request, response) => {
+        if (!request.file)
+            return response.status(400).json({ error: "No File uploaded" });
+
+        let results: TableDataCsv[] = [];
+        await new Promise<void>((resolve, reject) => {
+            if (!request.file) {
+                return;
+            }
+
+            fs.createReadStream(request.file.path)
+                .pipe(csv())
+                .on("data", (data: TableDataCsv) => results.push(data))
+                .on("end", resolve)
+                .on("error", reject)
+        });
+
+        fs.unlinkSync(request.file!.path);
+        console.log(`Import file read, length: ${results.length}, with first entry: ${results[0]}`)
+        await importTableDataCsv(results);
+        response.json({
+            rows: results.length,
+            data: results
+        });
+    });
 
 export default router;

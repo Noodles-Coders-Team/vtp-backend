@@ -34,7 +34,7 @@ export async function getGameById(gameId: string) {
 }
 
 export async function createGame(body: any) {
-    const game = validateSchema(body, CreateGameSchema) as GameDto;
+    const game = validateSchema<GameDto>(body, CreateGameSchema);
     const existingGame = await prisma.game.findFirst({
         where: {
             name: game.name

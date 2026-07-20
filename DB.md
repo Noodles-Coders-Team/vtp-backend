@@ -31,15 +31,15 @@ Table rank{
 Table post{
   id varchar [primary key]
   game_id guid
-  publication_time datetime
 }
 
 Table post_info{
   id guid [primary key]
   import_date datetime
   category varchar // Video Shorts or Post, determined on data import
-  video_id varchar
-  video_title string
+  version_id int
+  post_id varchar
+  post_title string
   publish_time datetime
   duration int // ==15 - post; < 300 - shorts; > 300 regular video
   engaged_views int
@@ -97,6 +97,6 @@ Table users{
 }
 
 ref game_used_in_video:  post.game_id > game.id // Many to one
-ref:  post.id < post_info.video_id
+ref:  post.id < post_info.post_id
 ref game_ranking: rank.game_id > game.id 
 ref: game.id < game_info.game_id

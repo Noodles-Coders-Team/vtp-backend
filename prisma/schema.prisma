@@ -19,7 +19,6 @@ model Game {
 
   ranks      Rank[]
   game_info GameInformation?
-  posts      Post[]
 
   @@map("game")
 }
@@ -51,10 +50,8 @@ model Rank {
 
 model Post {
   id               String   @id
-  game_id          String
-  publication_time DateTime
+  game_id          String?
 
-  game              Game              @relation(fields: [game_id], references: [id])
   post_informations PostInformation[]
 
   @@map("post")
@@ -64,8 +61,9 @@ model PostInformation {
   id          String   @id @default(uuid())
   import_date DateTime
   category    String // Video Shorts or Post, determined on data import
-  video_id    String
-  video_title String?
+  version_id Int @default(1)
+  post_id    String
+  post_title String?
   publishTime DateTime
   duration    Int // ==15 - post; < 300 - shorts; > 300 regular video
 
@@ -122,7 +120,7 @@ model PostInformation {
   cards_shown                   Int?
   clicks_per_card_shown_percent Float?
 
-  video Post @relation(fields: [video_id], references: [id]) // "ref: post.id < post_information.video_id"
+  video Post @relation(fields: [post_id], references: [id]) // "ref: post.id < post_information.video_id"
 
   @@map("post_info")
 }

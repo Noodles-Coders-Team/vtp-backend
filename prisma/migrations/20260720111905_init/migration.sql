@@ -35,8 +35,7 @@ CREATE TABLE "rank" (
 -- CreateTable
 CREATE TABLE "post" (
     "id" TEXT NOT NULL,
-    "game_id" TEXT NOT NULL,
-    "publication_time" TIMESTAMP(3) NOT NULL,
+    "game_id" TEXT,
 
     CONSTRAINT "post_pkey" PRIMARY KEY ("id")
 );
@@ -46,8 +45,9 @@ CREATE TABLE "post_info" (
     "id" TEXT NOT NULL,
     "import_date" TIMESTAMP(3) NOT NULL,
     "category" TEXT NOT NULL,
-    "video_id" TEXT NOT NULL,
-    "video_title" TEXT,
+    "version_id" INTEGER NOT NULL DEFAULT 1,
+    "post_id" TEXT NOT NULL,
+    "post_title" TEXT,
     "publishTime" TIMESTAMP(3) NOT NULL,
     "duration" INTEGER NOT NULL,
     "engaged_views" INTEGER,
@@ -122,7 +122,4 @@ ALTER TABLE "game_info" ADD CONSTRAINT "game_info_game_id_fkey" FOREIGN KEY ("ga
 ALTER TABLE "rank" ADD CONSTRAINT "rank_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "post" ADD CONSTRAINT "post_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "post_info" ADD CONSTRAINT "post_info_video_id_fkey" FOREIGN KEY ("video_id") REFERENCES "post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "post_info" ADD CONSTRAINT "post_info_post_id_fkey" FOREIGN KEY ("post_id") REFERENCES "post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
