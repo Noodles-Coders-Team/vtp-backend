@@ -97,8 +97,8 @@ CREATE TABLE "post_info" (
 
 -- CreateTable
 CREATE TABLE "channel_data" (
-    "id" TIMESTAMP(3) NOT NULL,
-    "views" INTEGER,
+    "id" TEXT NOT NULL,
+    "views" INTEGER NOT NULL,
 
     CONSTRAINT "channel_data_pkey" PRIMARY KEY ("id")
 );

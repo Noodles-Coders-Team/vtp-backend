@@ -40,11 +40,10 @@ export async function importChannelDataCsv(channel_data: ChannelDataCsv[]) {
     channel_data.forEach(async (data: ChannelDataCsv) => {
         const channelDataDto: ChannelDataDto = {
             id: data.Date,
-            views: data.Views
+            views: Number(data.Views) as number
         };
 
-        const created = await createChannelData(channelDataDto);
-        console.log(`Channel Data created/updated for the date: ${created.id}`);
+        await createChannelData(channelDataDto);
     });
 }
 

@@ -6,19 +6,24 @@ const prisma = p.prisma;
 
 export async function createChannelData(data: ChannelDataDto) {
     const channelData = validateSchema<ChannelDataDto>(data, ChannelDataSchema);
-    const existingData = prisma.channelData.findFirst({
+    const existingData = await prisma.channelData.findFirst({
         where: {
             id: channelData.id
         }
     });
     if (existingData === null) {
-        const created = prisma.channelData.create({ data: channelData });
+        const created = await prisma.channelData.create({
+            data: {
+                id: channelData.id,
+                views: channelData.views
+            }
+        });
         return created;
     }
     else {
         const data = validateSchema<ChannelDataDto>(existingData, ChannelDataSchema);
         data.views = channelData.views;
-        const updated = prisma.channelData.update({
+        const updated = await prisma.channelData.update({
             where: { id: data.id },
             data: data
         });

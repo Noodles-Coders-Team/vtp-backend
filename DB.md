@@ -86,7 +86,7 @@ Table post_info{
 }
 
 Table channel_data{
-  id Date [primary key]
+  id varchar [primary key]
   views int
 }
 
