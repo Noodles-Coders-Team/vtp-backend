@@ -5,7 +5,7 @@ const prisma = p.prisma;
 
 
 export async function createGameInfo(body: any) {
-    const gameInfo = validateSchema(body, CreateGameInfoSchema) as CreateGameInfoDto;
+    const gameInfo = validateSchema<CreateGameInfoDto>(body, CreateGameInfoSchema);
 
     const existingInfo = await prisma.gameInformation.findFirst({ where: { game_id: gameInfo.game_id } });
     if (existingInfo === null) {
