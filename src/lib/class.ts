@@ -23,10 +23,10 @@ export interface ChannelDataCsv {
 export interface TableDataCsv {
     Content: string;
     'Video title': string;
-    'Video publish time': string; // Consider parsing to Date object during ingestion
-    Duration: number; // Typically in seconds
+    'Video publish time': string;
+    Duration: number;
     'Engaged views': number;
-    'Average view duration': string; // e.g., "0:12:34"
+    'Average view duration': string;
     'Average percentage viewed (%)': number;
     'Stayed to watch (%)': number;
     'Unique viewers': number;

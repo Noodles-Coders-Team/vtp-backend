@@ -52,19 +52,20 @@ export async function importTableDataCsv(table_data: TableDataCsv[]) {
         const post: PostDto = {
             id: data['Content'],
         };
+
         await createPost(post);
-        
+
         const tableData: CreatePostInformationDto = {
             post_id: data['Content'],
             post_title: data['Video title'],
-            publish_time: data['Video publish time'],
+            publish_time: formatDate(data['Video publish time']),
 
             duration: Number(data.Duration),
             engaged_views: Number(data['Engaged views']),
 
             average_view_duration: data['Average view duration'], // Keep as '0:12:34' string
 
-            average_percentage_viewed_percent: Number(data['Average percentage viewed (%)']),
+            average_viewed_percent: Number(data['Average percentage viewed (%)']),
             stayed_to_watch_percent: Number(data['Stayed to watch (%)']),
 
             unique_viewers: Number(data['Unique viewers']),
@@ -115,4 +116,25 @@ export async function importTableDataCsv(table_data: TableDataCsv[]) {
 
         await createPostInformation(tableData);
     });
+}
+
+
+function formatDate(dateI: string): string | undefined {
+    if (dateI == "")
+        return undefined;
+
+    //May 16, 2026
+    const date = dateI.split(" ");
+    let month: number = -1;
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    for (var j = 0; j < months.length; j++) {
+        if (date[0] == months[j]) {
+            month = months.indexOf(months[j]) + 1;
+        }
+    }
+    const monthString = month < 10 ? `0${month.toString()}` : month.toString();
+    const day = date[1].slice(0, -1);
+    const dateString = Number(day) < 10 ? `0${day}` : day;
+    const res = `${date[2]}-${monthString}-${dateString}`;
+    return res;
 }

@@ -10,7 +10,7 @@ export async function createPost(postDto: PostDto): Promise<PostDto> {
     const existingPost = await prisma.post.findFirst({ where: { id: post.id } });
     if (existingPost === null) {
         const result = await prisma.post.create({ data: post as any });
-        return result as PostDto;
+        return validateSchema<PostDto>(result, PostSchema);
     }
     return validateSchema<PostDto>(existingPost, PostSchema);
 }

@@ -11,13 +11,13 @@ datasource db {
 }
 
 model Game {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String
   release_date DateTime?
   link         String?
   recorded     Boolean
 
-  ranks      Rank[]
+  ranks     Rank[]
   game_info GameInformation?
 
   @@map("game")
@@ -38,10 +38,10 @@ model GameInformation {
 }
 
 model Rank {
-  id         String   @id @default(uuid())
-  game_id    String
-  date       DateTime
-  rank       Float // Kept as 'rank' but mapped to Float; Prisma allows field names matching DBML columns
+  id      String   @id @default(uuid())
+  game_id String
+  date    DateTime
+  rank    Float // Kept as 'rank' but mapped to Float; Prisma allows field names matching DBML columns
 
   game Game @relation(fields: [game_id], references: [id])
 
@@ -49,8 +49,8 @@ model Rank {
 }
 
 model Post {
-  id               String   @id
-  game_id          String?
+  id      String  @id
+  game_id String?
 
   post_informations PostInformation[]
 
@@ -58,18 +58,18 @@ model Post {
 }
 
 model PostInformation {
-  id          String   @id @default(uuid())
-  import_date DateTime
-  category    String // Video Shorts or Post, determined on data import
-  version_id Int @default(1)
-  post_id    String
-  post_title String?
-  publishTime DateTime
-  duration    Int // ==15 - post; < 300 - shorts; > 300 regular video
+  id           String   @id @default(uuid())
+  import_date  DateTime @default(now())
+  category     String? // Video Shorts or Post, determined on data import
+  version_id   Int      @default(1)
+  post_id      String
+  post_title   String?
+  publish_time String?
+  duration     Int // ==15 - post; < 300 - shorts; > 300 regular video
 
   engaged_views            Int?
-  average_view_duration    DateTime? @db.Time
-  average_percentage       Float? // average_percentage_viewed_percent
+  average_view_duration    String?
+  average_viewed_percent   Float?
   stayed_to_watch_percent  Float?
   unique_viewers           Int?
   unique_reach             Int?
@@ -95,9 +95,9 @@ model PostInformation {
   total_sales_usd Float?
   orders          Int?
 
-  approved_commissions Float? // approved_commissions_usd
-  pending_commissions  Float? // pending_commissions_usd
-  removed_commission   Float? // removed_commission_usd
+  approved_commissions_usd Float? // approved_commissions_usd
+  pending_commissions_usd  Float? // pending_commissions_usd
+  removed_commission_usd   Float? // removed_commission_usd
 
   youtube_premium_views            Int?
   youtube_premium_watch_time_hours Float? // youtube_premium_watch_time_hours
