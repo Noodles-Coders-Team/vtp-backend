@@ -4,9 +4,9 @@ export const swaggerSpec = swaggerJsdoc({
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "Weather API",
+            title: "VTP API",
             version: "1.0.0",
-            description: "REST API for weather monitoring"
+            description: "REST API for Video Tracking and Planning"
         },
         servers: [
             {

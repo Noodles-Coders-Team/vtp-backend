@@ -1,14 +1,48 @@
 import { Router } from "express";
 import prisma from "../lib/prisma";
 
+
+/**
+ * @swagger
+ * tags:
+ *   name: PostInformation
+ *   description: Post information management endpoints
+ */
 const router = Router();
 
+
+/**
+ * @swagger
+ * /post/information:
+ *   get:
+ *     tags: [PostInformation]
+ *     summary: List all post informations
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/', async (request, response) => {
     const allPostInformations = await prisma.prisma.postInformation.findMany();
     response.json(allPostInformations);
 });
 
 
+/**
+ * @swagger
+ * /post/information/{id}:
+ *   get:
+ *     tags: [PostInformation]
+ *     summary: Get post information by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     const postInformation = await prisma.prisma.postInformation.findUnique({
@@ -18,6 +52,23 @@ router.get('/:id', async (request, response) => {
 });
 
 
+/**
+ * @swagger
+ * /post/information:
+ *   post:
+ *     tags: [PostInformation]
+ *     summary: Create post information
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: PostInformation entity data (Prisma model: postInformation)
+ *     responses:
+ *       201:
+ *         description: Created
+ */
 router.post('/', async (request, response) => {
     const postInformation = request.body;
     console.log("Creating post information: ", JSON.stringify(postInformation, null, 2));
@@ -28,6 +79,29 @@ router.post('/', async (request, response) => {
 });
 
 
+/**
+ * @swagger
+ * /post/information/{id}:
+ *   put:
+ *     tags: [PostInformation]
+ *     summary: Update post information by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: PostInformation fields to update (Prisma model: postInformation)
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.put('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     const postInformation = request.body;
@@ -40,6 +114,22 @@ router.put('/:id', async (request, response) => {
 });
 
 
+/**
+ * @swagger
+ * /post/information/{id}:
+ *   delete:
+ *     tags: [PostInformation]
+ *     summary: Delete post information by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.delete('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     console.log("Deleting post information with ID: ", postInformationId);

@@ -6,11 +6,82 @@ import fs from "fs";
 
 import { importChannelDataCsv, importGameCsv, importTableDataCsv } from "../services/importService";
 
+
+/**
+ * @swagger
+ * tags:
+ *   name: Import
+ *   description: CSV import endpoints
+ */
 const router = Router();
 
 
 const upload = multer({ dest: "uploads/" })
 
+
+/**
+ * @swagger
+ * /import/games:
+ *   post:
+ *     tags: [Import]
+ *     summary: Import games from CSV file
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       GameName:
+ *                         type: string
+ *                       Id:
+ *                         type: number
+ *                       UpdateDate:
+ *                         type: string
+ *                         format: date
+ *                       NumberOfEpisodes:
+ *                         type: number
+ *                       Views:
+ *                         type: number
+ *                       VideoTitle:
+ *                         type: string
+ *                       Queue:
+ *                         type: number
+ *                       Ads:
+ *                         type: boolean
+ *                       CanRecord:
+ *                         type: boolean
+ *                       Discussed:
+ *                         type: boolean
+ *                       Genre:
+ *                         type: string
+ *                       Tags:
+ *                         type: string
+ *                       Notes:
+ *                         type: string
+ *       400:
+ *         description: No file uploaded
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/games',
     upload.single("file"),
     async (request, response) => {
@@ -45,6 +116,46 @@ router.post('/games',
     });
 
 
+/**
+ * @swagger
+ * /import/channel-data:
+ *   post:
+ *     tags: [Import]
+ *     summary: Import channel data from CSV file
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       Date:
+ *                         type: string
+ *                       Views:
+ *                         type: number
+ *       400:
+ *         description: No file uploaded
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/channel-data',
     upload.single("file"),
     async (request, response) => {
@@ -79,6 +190,41 @@ router.post('/channel-data',
     });
 
 
+/**
+ * @swagger
+ * /import/table-data:
+ *   post:
+ *     tags: [Import]
+ *     summary: Import table data from CSV file
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *     400:
+ *       description: No file uploaded
+ *     500:
+ *       description: Internal server error
+ */
 router.post('/table-data',
     upload.single("file"),
     async (request, response) => {
@@ -112,4 +258,5 @@ router.post('/table-data',
         }
     });
 
+    
 export default router;

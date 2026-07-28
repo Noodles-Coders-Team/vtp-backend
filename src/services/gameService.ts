@@ -16,11 +16,11 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
         },
         where: {
             game_info: {
-                ...(can_record !== null && {can_record: can_record}),
-                ...(discussed !== null && {discussed: discussed}),
+                ...(can_record !== null && { can_record: can_record }),
+                ...(discussed !== null && { discussed: discussed }),
             }
         }
-        
+
     });
     return allGamesWithInfo;
 }
@@ -39,18 +39,16 @@ export async function createGame(body: any) {
             name: game.name
         }
     });
-    let gameToReturn;
-    if (existingGame === null) {
-        const createdGame = await prisma.game.create({
-            data: body
-        });
-        gameToReturn = createdGame;
-    }
-    else {
-        gameToReturn = existingGame;
+
+    if (existingGame !== null) {
+        return existingGame;
     }
 
-    return gameToReturn;
+    const createdGame = await prisma.game.create({
+        data: body
+    });
+
+    return createdGame;
 }
 
 export async function updateGame(id: string, game_body: any) {

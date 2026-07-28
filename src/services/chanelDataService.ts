@@ -4,6 +4,7 @@ import { validateSchema } from "../middleware/validate";
 const prisma = p.prisma;
 
 
+//Creates new channel data if doesn't exist. If exists updates Views count
 export async function createChannelData(data: ChannelDataDto) {
     const channelData = validateSchema<ChannelDataDto>(data, ChannelDataSchema);
     const existingData = await prisma.channelData.findFirst({
@@ -33,6 +34,6 @@ export async function createChannelData(data: ChannelDataDto) {
 
 
 export async function getAllChannelData() {
-    const allChannellData = prisma.channelData.findMany({ orderBy: { id: "asc" } });
+    const allChannellData = await prisma.channelData.findMany({ orderBy: { id: "asc" } });
     return allChannellData;
 }

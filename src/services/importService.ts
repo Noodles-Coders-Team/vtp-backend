@@ -9,7 +9,7 @@ import { validateSchema } from "../middleware/validate";
 
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
-    gameCsv.forEach(async (game: GameCsv) => {
+    await gameCsv.forEach(async (game: GameCsv) => {
         const createGameSchema: CreateGameDto = {
             name: game.GameName,
             recorded: false,
@@ -28,6 +28,7 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
 }
 
 
+//Import files have only TRUE/FALSE values
 function stringToBool(val: any): boolean {
     if (val === "TRUE")
         return true;
@@ -36,7 +37,7 @@ function stringToBool(val: any): boolean {
 
 
 export async function importChannelDataCsv(channel_data: ChannelDataCsv[]) {
-    channel_data.forEach(async (data: ChannelDataCsv) => {
+    await channel_data.forEach(async (data: ChannelDataCsv) => {
         const channelDataDto: ChannelDataDto = {
             id: data.Date,
             views: Number(data.Views) as number
