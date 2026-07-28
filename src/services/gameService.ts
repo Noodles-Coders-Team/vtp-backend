@@ -1,7 +1,6 @@
 import { CreateGameSchema, GameDto, GameInfoDto } from "@nct/vtp-common";
 import p from "../lib/prisma";
 import { validateSchema } from "../middleware/validate";
-import { createGameInfo } from "./gameInfoService";
 const prisma = p.prisma;
 
 export async function getAllGames() {
