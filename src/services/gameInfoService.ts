@@ -1,11 +1,10 @@
-import { CreateGameInfoDto, CreateGameInfoSchema, GameInfoDto, GameInfoSchema } from "@nct/vtp-common";
+import { CreateGameInfoDto, CreateGameInfoSchema, GameInfoDto, GameInfoSchema, ValidateSchema } from "@nct/vtp-common";
 import p from "../lib/prisma";
-import { validateSchema } from "../middleware/validate";
 const prisma = p.prisma;
 
 
 export async function createGameInfo(body: any) {
-    const gameInfo = validateSchema<CreateGameInfoDto>(body, CreateGameInfoSchema);
+    const gameInfo = ValidateSchema<CreateGameInfoDto>(body, CreateGameInfoSchema);
 
     const existingInfo = await prisma.gameInformation.findFirst({ where: { game_id: gameInfo.game_id } });
     if (existingInfo === null) {
@@ -17,13 +16,16 @@ export async function createGameInfo(body: any) {
         return createdInfo;
     }
     else {
-        if (existingInfo.notes === null)
-            existingInfo.notes = "";
-        return updateGameInfo(existingInfo);
+        existingInfo.can_record = gameInfo.can_record;
+        existingInfo.discussed = gameInfo.discussed;
+        existingInfo.genre = gameInfo.genre ?? [];
+        existingInfo.tags = gameInfo.tags ?? [];
+        existingInfo.notes = gameInfo.notes ?? "";
+        return await updateGameInfo(existingInfo);
     }
 }
 
 export async function updateGameInfo(body: any) {
-    const gameInfo = validateSchema(body, GameInfoSchema) as GameInfoDto;
+    const gameInfo = ValidateSchema(body, GameInfoSchema) as GameInfoDto;
     return await prisma.gameInformation.update({ where: { id: gameInfo.id }, data: gameInfo })
 }

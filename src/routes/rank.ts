@@ -64,7 +64,7 @@ router.get('/:id', async (request, response) => {
  *         application/json:
  *           schema:
  *             type: object
- *             description: Rank entity data (Prisma model: rank)
+ *             description: Rank entity data
  *     responses:
  *       201:
  *         description: Created
@@ -96,7 +96,7 @@ router.post('/', async (request, response) => {
  *         application/json:
  *           schema:
  *             type: object
- *             description: Rank fields to update (Prisma model: rank)
+ *             description: Rank fields to update
  *     responses:
  *       200:
  *         description: OK

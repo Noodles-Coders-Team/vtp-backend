@@ -96,6 +96,12 @@ Table users{
   permission_level varchar // Edit & View only?
 }
 
+Table drop_down_data{
+  value varchar [primary key]
+  score int
+  type varchar
+}
+
 ref game_used_in_video:  post.game_id > game.id // Many to one
 ref:  post.id < post_info.post_id
 ref game_ranking: rank.game_id > game.id 

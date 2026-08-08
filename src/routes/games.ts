@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { createGame, deleteGame, getAllGames, getAllGamesWithInfo, getGameById, updateGame } from "../services/gameService";
 import { updateGameInfo } from "../services/gameInfoService";
-import { validateRequest } from "../middleware/validate";
 
 /**
  * @swagger

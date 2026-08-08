@@ -1,29 +1,30 @@
-import { ChannelDataDto, CreatePostInformationDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, PostDto, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
+import { ChannelDataDto, CreatePostInformationDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, PostDto, ValidateSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
 import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/class";
 import { createGame } from "./gameService";
 import { createGameInfo } from "./gameInfoService";
 import { _isoDateTime } from "zod/v4/core";
 import { createChannelData } from "./chanelDataService";
 import { createPost, createPostInformation } from "./postService";
-import { validateSchema } from "../middleware/validate";
 
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
-    await gameCsv.forEach(async (game: GameCsv) => {
+    gameCsv.forEach(async (game: GameCsv) => {
         const createGameSchema: CreateGameDto = {
             name: game.GameName,
             recorded: false,
         };
-        const createdGame = validateSchema<GameDto>(await createGame(createGameSchema), GameSchema);
+        const createdGame = ValidateSchema<GameDto>(await createGame(createGameSchema), GameSchema);
 
         const createGameInfoSchema: CreateGameInfoDto = {
             game_id: createdGame.id,
             discussed: stringToBool(game.Discussed),
             can_record: stringToBool(game.CanRecord),
+            genre: game.Genre.split(',').map((v) => v.trim()),
+            tags: game.Tags.split(',').map((v) => v.trim()),
             notes: game.Notes
-        }
+        };
 
-        const createdInfo = validateSchema<GameInfoDto>(await createGameInfo(createGameInfoSchema), GameInfoSchema);
+        const createdInfo = ValidateSchema<GameInfoDto>(await createGameInfo(createGameInfoSchema), GameInfoSchema);
     });
 }
 

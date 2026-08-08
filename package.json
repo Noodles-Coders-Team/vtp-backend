@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "tsx ./src/test.ts",
-    "dev": "tsx ./src/server.ts"
+    "dev": "tsx ./src/server.ts",
+    "build": "npx prisma generate"
   },
   "repository": {
     "type": "git",
@@ -45,9 +46,9 @@
     "typescript": "^5.8.3"
   },
   "allowScripts": {
-    "prisma@7.8.0": true,
-    "@prisma/engines@7.8.0": true,
-    "@scarf/scarf@1.4.0": true,
-    "esbuild@0.28.1": true
+    "@prisma/engines": true,
+    "@scarf/scarf": true,
+    "esbuild": true,
+    "prisma": true
   }
 }

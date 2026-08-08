@@ -64,7 +64,7 @@ router.get('/:id', async (request, response) => {
  *         application/json:
  *           schema:
  *             type: object
- *             description: Post entity data (Prisma model: post)
+ *             description: Post entity data
  *     responses:
  *       201:
  *         description: Created
@@ -97,7 +97,7 @@ router.post('/', async (request, response) => {
  *         application/json:
  *           schema:
  *             type: object
- *             description: Post fields to update (Prisma model: post)
+ *             description: Post fields to update
  *     responses:
  *       200:
  *         description: OK

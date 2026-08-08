@@ -139,3 +139,12 @@ model Users {
 
   @@map("users")
 }
+
+model DropDownData {
+  key   String @id
+  value String
+  score Int
+  type  String
+
+  @@map("drop_down_data")
+}

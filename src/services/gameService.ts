@@ -1,6 +1,5 @@
-import { CreateGameSchema, GameDto, GameInfoDto } from "@nct/vtp-common";
+import { CreateGameSchema, GameDto, GameInfoDto, ValidateSchema } from "@nct/vtp-common";
 import p from "../lib/prisma";
-import { validateSchema } from "../middleware/validate";
 const prisma = p.prisma;
 
 export async function getAllGames() {
@@ -33,7 +32,7 @@ export async function getGameById(gameId: string) {
 }
 
 export async function createGame(body: any) {
-    const game = validateSchema<GameDto>(body, CreateGameSchema);
+    const game = ValidateSchema<GameDto>(body, CreateGameSchema);
     const existingGame = await prisma.game.findFirst({
         where: {
             name: game.name
