@@ -13,6 +13,8 @@ export async function getAllRanksForGame(gameId: string): Promise<RankDto[]> {
     const data = await prisma.rank.findUnique({
         where: { id: gameId }
     });
+    if (data === null)
+        return [];
     return ValidateSchemaArray<RankDto[]>(data, RankSchema);
 }
 
