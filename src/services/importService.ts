@@ -1,10 +1,11 @@
-import { ChannelDataDto, CreatePostInformationDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, PostDto, ValidateSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
+import { ChannelDataDto, CreatePostInformationDto, CreateRankDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, PostDto, RankDto, ValidateSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
 import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/class";
 import { createGame } from "./gameService";
 import { createGameInfo } from "./gameInfoService";
 import { _isoDateTime } from "zod/v4/core";
 import { createChannelData } from "./chanelDataService";
 import { createPost, createPostInformation } from "./postService";
+import { createRank } from "./rankService";
 
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
@@ -13,7 +14,7 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             name: game.GameName,
             recorded: false,
         };
-        const createdGame = ValidateSchema<GameDto>(await createGame(createGameSchema), GameSchema);
+        const createdGame = await createGame(createGameSchema);
 
         const createGameInfoSchema: CreateGameInfoDto = {
             game_id: createdGame.id,
@@ -24,7 +25,15 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             notes: game.Notes
         };
 
-        const createdInfo = ValidateSchema<GameInfoDto>(await createGameInfo(createGameInfoSchema), GameInfoSchema);
+        const createdInfo = await createGameInfo(createGameInfoSchema);
+
+        const createRankDto: CreateRankDto = {
+            game_id: createdGame.id,
+            date: game.UpdateDate,
+            rank: Number(game.Id)
+        };
+
+        const createdRank = await createRank(createRankDto);
     });
 }
 

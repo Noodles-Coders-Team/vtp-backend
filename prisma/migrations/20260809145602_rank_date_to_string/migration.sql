@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "rank" ALTER COLUMN "date" SET DATA TYPE TEXT;

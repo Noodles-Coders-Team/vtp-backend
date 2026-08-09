@@ -1,7 +1,7 @@
 export interface GameCsv {
     GameName: string,
     Id: number,
-    UpdateDate: Date,
+    UpdateDate: string,
     NumberOfEpisodes: number,
     Views: number,
     VideoTitle: string,

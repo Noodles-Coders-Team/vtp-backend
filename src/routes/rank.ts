@@ -1,5 +1,5 @@
 import { Router } from "express";
-import prisma from "../lib/prisma";
+import { createRank, deleteRank, getAllRanks, getAllRanksForGame } from "../services/rankService";
 
 
 /**
@@ -22,7 +22,7 @@ const router = Router();
  *         description: OK
  */
 router.get('/', async (request, response) => {
-    const allRanks = await prisma.prisma.rank.findMany();
+    const allRanks = await getAllRanks();
     response.json(allRanks);
 });
 
@@ -43,12 +43,10 @@ router.get('/', async (request, response) => {
  *       200:
  *         description: OK
  */
-router.get('/:id', async (request, response) => {
-    const rankId = request.params.id;
-    const rank = await prisma.prisma.rank.findUnique({
-        where: { id: rankId }
-    });
-    response.json(rank);
+router.get('/:game-id', async (request, response) => {
+    const gameId = request.params.game;
+    const gameRanks = await getAllRanksForGame(gameId);
+    response.json(gameRanks);
 });
 
 
@@ -70,46 +68,8 @@ router.get('/:id', async (request, response) => {
  *         description: Created
  */
 router.post('/', async (request, response) => {
-    const rank = request.body;
-    const createdRank = await prisma.prisma.rank.create({
-        data: rank
-    });
+    const createdRank = await createRank(request.body);
     response.status(201).json(createdRank);
-});
-
-
-/**
- * @swagger
- * /rank/{id}:
- *   put:
- *     tags: [Ranks]
- *     summary: Update a rank by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             description: Rank fields to update
- *     responses:
- *       200:
- *         description: OK
- */
-router.put('/:id', async (request, response) => {
-    const rankId = request.params.id;
-    const rank = request.body;
-    console.log("Updating rank with ID: ", rankId, " with data: ", JSON.stringify(rank, null, 2));
-    const updatedRank = await prisma.prisma.rank.update({
-        where: { id: rankId },
-        data: rank
-    });
-    response.status(200).json(updatedRank);
 });
 
 
@@ -130,11 +90,7 @@ router.put('/:id', async (request, response) => {
  *         description: OK
  */
 router.delete('/:id', async (request, response) => {
-    const rankId = request.params.id;
-    console.log("Deleting rank with ID: ", rankId);
-    const deletedRank = await prisma.prisma.rank.delete({
-        where: { id: rankId }
-    });
+    const deletedRank = await deleteRank(request.params.id);
     response.status(200).json(deletedRank);
 });
 
