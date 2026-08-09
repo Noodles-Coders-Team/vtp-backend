@@ -14,13 +14,28 @@ export async function getGenreDropDown(): Promise<DropDownDto[]> {
 
 
 async function getDropDownData(type: string): Promise<DropDownDto[]> {
-    const data = await prisma.dropDownData.findMany({ where: { type: type } });
+    const data = await prisma.dropDownData.findMany({
+        where: {
+            type: type
+        },
+        orderBy: [
+            { type: "asc" },
+            { score: "desc" },
+            { value: "asc" },
+        ]
+    });
     return ValidateSchemaArray<DropDownDto[]>(data, DropDownSchema);
 }
 
 
 export async function getAllDropDownData(): Promise<DropDownDto[]> {
-    return ValidateSchemaArray<DropDownDto[]>(await prisma.dropDownData.findMany({ orderBy: { type: "asc" } }), DropDownSchema);
+    return ValidateSchemaArray<DropDownDto[]>(await prisma.dropDownData.findMany({
+        orderBy: [
+            { type: "asc" },
+            { score: "desc" },
+            { value: "asc" },
+        ]
+    }), DropDownSchema);
 }
 
 
