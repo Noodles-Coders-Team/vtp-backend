@@ -29,12 +29,21 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
 
         const createRankDto: CreateRankDto = {
             game_id: createdGame.id,
-            date: game.UpdateDate,
+            date: convertDate(game.UpdateDate),
             rank: Number(game.Id)
         };
 
         const createdRank = await createRank(createRankDto);
     });
+}
+
+
+function convertDate(date: string): string {
+    const info = date.split(".");
+    if (info.length == 3)
+        return info.at(2) + '-' + info.at(1) + '-' + info.at(0) + 'T00:00:00.000Z';
+    else
+        return new Date(Date.now()).toISOString();
 }
 
 

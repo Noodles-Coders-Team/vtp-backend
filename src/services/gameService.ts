@@ -1,7 +1,7 @@
 import { CreateGameSchema, GameDto, GameInfoDto, GameInfoSchema, GameSchema, GameWithInfoDto, GameWithInfoSchema, ValidateSchema, ValidateSchemaArray } from "@nct/vtp-common";
 import p from "../lib/prisma";
 import { getGenreDropDown, getTagsDropDown } from "./dropDownDataService";
-import { getAllRanksForGame } from "./rankService";
+import { getLatestRankForGame } from "./rankService";
 const prisma = p.prisma;
 
 
@@ -28,7 +28,7 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
 
     const allGamesFlattened = allGamesWithInfo.map((game) => {
         const { game_info, ...gameFields } = game;
-        const flat = { ...gameFields, ...game_info, };
+        const flat = { ...game_info, ...gameFields };
         return flat;
     });
 
@@ -49,24 +49,16 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
             score += allGenres.find((g) => g.value === genre)?.score ?? 0;
         });
 
-        //TODO: Fix ranking to store proper date in DB to awoid requesting ALL ranks for each game.
-        const rank = await getLatestRank(game.id);
-
+        const rankDto = await getLatestRankForGame(game.id);
+        const rank = rankDto?.rank ?? 50;
         score += (rank - 50) / 10;
-        game.game_score = score;
+        game.game_score = Number(score.toPrecision(2));
         return game;
     }));
 
     const gamesWithInfo = ValidateSchemaArray<GameWithInfoDto[]>(gamesWithInfoRaw, GameWithInfoSchema);
     gamesWithInfo.sort((a, b) => (b.game_score ?? 0) - (a.game_score ?? 0));
     return gamesWithInfo;
-}
-
-
-async function getLatestRank(gameId: string): Promise<number> {
-    const ranks = await getAllRanksForGame(gameId);
-    ranks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    return ranks.length > 0 ? ranks[0].rank : 0;
 }
 
 

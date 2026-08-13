@@ -112,6 +112,16 @@ CREATE TABLE "users" (
     CONSTRAINT "users_pkey" PRIMARY KEY ("login")
 );
 
+-- CreateTable
+CREATE TABLE "drop_down_data" (
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "score" INTEGER NOT NULL,
+    "type" TEXT NOT NULL,
+
+    CONSTRAINT "drop_down_data_pkey" PRIMARY KEY ("key")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "game_info_game_id_key" ON "game_info"("game_id");
 
