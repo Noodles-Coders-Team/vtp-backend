@@ -37,9 +37,6 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
     const allTags = await getTagsDropDown();
     const allGenres = await getGenreDropDown();
 
-    for (const game in gamesWithInfoRaw) {
-
-    }
     await Promise.all(gamesWithInfoRaw.map(async (game) => {
         let score = 0;
         game.tags?.forEach((tag) => {

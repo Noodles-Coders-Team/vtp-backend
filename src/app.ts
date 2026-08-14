@@ -4,7 +4,7 @@ import usersRouter from './routes/users';
 import gamesRouter from './routes/games';
 import postRouter from './routes/post';
 import postInformationRouter from './routes/post_information';
-import chanelDataRouter from './routes/chanel_data';
+import chanelDataRouter from './routes/channel_data';
 import dropDownDataRouter from './routes/drop_down_data';
 import rankRouter from './routes/rank';
 import importRouter from './routes/import';

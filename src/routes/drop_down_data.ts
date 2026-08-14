@@ -18,9 +18,9 @@ router.delete('/:key', async (request, response) => {
     await deleteDropDownData(request.params.key);
 });
 
-router.get('/', async (request, reponse) => {
+router.get('/', async (request, response) => {
     const allData = await getAllDropDownData();
-    reponse.json(allData);
+    response.json(allData);
 });
 
 router.put('/', async (request, response) => {
