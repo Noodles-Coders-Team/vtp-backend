@@ -8,6 +8,7 @@ import chanelDataRouter from './routes/channel_data';
 import dropDownDataRouter from './routes/drop_down_data';
 import rankRouter from './routes/rank';
 import importRouter from './routes/import';
+import settingRouter from './routes/settings';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
@@ -30,6 +31,7 @@ app.use('/rank', rankRouter);
 app.use('/channel-data', chanelDataRouter);
 app.use('/import', importRouter);
 app.use('/drop-down-data', dropDownDataRouter);
+app.use('/settings', settingRouter);
 // Another wy for adding validation
 //app.use('/users', validate(CreateUserSchema), usersRouter);
 

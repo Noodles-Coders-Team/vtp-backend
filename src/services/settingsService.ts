@@ -4,13 +4,13 @@ const prisma = p.prisma;
 
 
 export async function getAllSettings(): Promise<SettingDto[]> {
-    const rawSettings = prisma.settings.findMany();
+    const rawSettings = await prisma.settings.findMany();
     return await ValidateSchemaArray<SettingDto[]>(rawSettings, SettingSchema);
 }
 
 
 export async function getSettingByKey(key: string): Promise<SettingDto> {
-    const rawSettings = prisma.settings.findFirst({ where: { key: key } });
+    const rawSettings = await prisma.settings.findFirst({ where: { key: key } });
     return await ValidateSchema<SettingDto>(rawSettings, SettingSchema);
 }
 
