@@ -102,7 +102,18 @@ Table drop_down_data{
   type varchar
 }
 
-ref game_used_in_video:  post.game_id > game.id // Many to one
-ref:  post.id < post_info.post_id
-ref game_ranking: rank.game_id > game.id 
-ref: game.id < game_info.game_id
+Table settings{
+  key varchaer [primary key]
+  value varchar
+  display varchar
+}
+
+//References
+ref game_used_in_video:  post.game_id > game.id
+ref post_info:  post.id < post_info.post_id
+ref game_ranking:  game.id < rank.game_id 
+ref game_info: game.id - game_info.game_id
+
+dep: post -> post_info [note: 'Import all of channel data split into two tables']
+dep: game -> game_info [note: "Import of game table"]
+dep: game -> rank [note: "Import of game table"]

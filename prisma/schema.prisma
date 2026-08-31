@@ -148,3 +148,11 @@ model DropDownData {
 
   @@map("drop_down_data")
 }
+
+model Settings {
+  key String @id
+  value String
+  display String
+
+  @@map("settings")
+}
