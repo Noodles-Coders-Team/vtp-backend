@@ -27,3 +27,9 @@ export async function updateSetting(setting: any): Promise<SettingDto> {
     const updated = await prisma.settings.update({ data: setting, where: { key: setting.key } });
     return ValidateSchema<SettingDto>(updated, SettingSchema);
 }
+
+
+export async function deleteSetting(key: string): Promise<SettingDto> {
+    const deleted = await prisma.settings.delete({ where: { key: key } });
+    return ValidateSchema<SettingDto>(deleted, SettingSchema);
+}

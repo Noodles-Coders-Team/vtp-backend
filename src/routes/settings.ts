@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createSetting, getAllSettings, getSettingByKey, updateSetting } from "../services/settingsService";
+import { createSetting, deleteSetting, getAllSettings, getSettingByKey, updateSetting } from "../services/settingsService";
 
 
 const router = Router();
@@ -27,6 +27,12 @@ router.put('/', async (request, response) => {
     const setting = await updateSetting(request.body);
     response.json(setting);
 });
+
+
+router.delete('/:key', async (request, response) => {
+    const setting = await deleteSetting(request.params.key);
+    response.json(setting);
+})
 
 
 export default router;
