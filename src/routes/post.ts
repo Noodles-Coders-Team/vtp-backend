@@ -71,7 +71,6 @@ router.get('/:id', async (request, response) => {
  */
 router.post('/', async (request, response) => {
     const post = request.body;
-    console.log("Creating post: ", JSON.stringify(post, null, 2));
     const createdPost = await prisma.prisma.post.create({
         data: post
     });
@@ -105,7 +104,6 @@ router.post('/', async (request, response) => {
 router.put('/:id', async (request, response) => {
     const postId = request.params.id;
     const post = request.body;
-    console.log("Updating post with ID: ", postId, " with data: ", JSON.stringify(post, null, 2));
     const updatedPost = await prisma.prisma.post.update({
         where: { id: postId },
         data: post
@@ -132,7 +130,6 @@ router.put('/:id', async (request, response) => {
  */
 router.delete('/:id', async (request, response) => {
     const postId = request.params.id;
-    console.log("Deleting post with ID: ", postId);
     const deletedPost = await prisma.prisma.post.delete({
         where: { id: postId }
     });

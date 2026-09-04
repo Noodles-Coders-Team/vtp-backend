@@ -71,7 +71,6 @@ router.get('/:id', async (request, response) => {
  */
 router.post('/', async (request, response) => {
     const postInformation = request.body;
-    console.log("Creating post information: ", JSON.stringify(postInformation, null, 2));
     const createdPostInformation = await prisma.prisma.postInformation.create({
         data: postInformation
     });
@@ -105,7 +104,6 @@ router.post('/', async (request, response) => {
 router.put('/:id', async (request, response) => {
     const postInformationId = request.params.id;
     const postInformation = request.body;
-    console.log("Updating post information with ID: ", postInformationId, " with data: ", JSON.stringify(postInformation, null, 2));
     const updatedPostInformation = await prisma.prisma.postInformation.update({
         where: { id: postInformationId },
         data: postInformation
@@ -132,7 +130,6 @@ router.put('/:id', async (request, response) => {
  */
 router.delete('/:id', async (request, response) => {
     const postInformationId = request.params.id;
-    console.log("Deleting post information with ID: ", postInformationId);
     const deletedPostInformation = await prisma.prisma.postInformation.delete({
         where: { id: postInformationId }
     });

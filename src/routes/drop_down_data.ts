@@ -23,7 +23,7 @@ router.get('/', async (request, response) => {
     response.json(allData);
 });
 
-router.put('/', async (request, response) => {
+router.post('/', async (request, response) => {
     const created = await createDropDownData(request.body);
     response.json(created);
 });
