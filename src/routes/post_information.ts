@@ -22,8 +22,8 @@ const router = Router();
  *         description: OK
  */
 router.get('/', async (request, response) => {
-    const allPostInformations = await prisma.prisma.postInformation.findMany();
-    response.json(allPostInformations);
+    const allPostInformation = await prisma.prisma.postInformation.findMany();
+    response.json(allPostInformation);
 });
 
 

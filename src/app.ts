@@ -10,7 +10,7 @@ import rankRouter from './routes/rank';
 import importRouter from './routes/import';
 import settingRouter from './routes/settings';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './config/swagger';
+import {swaggerSpec} from './config/swagger';
 
 const app = express();
 app.use(express.json());

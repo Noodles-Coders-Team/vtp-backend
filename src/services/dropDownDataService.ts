@@ -1,5 +1,6 @@
-import { DropDownSchema, ValidateSchema, ValidateSchemaArray, type DropDownDto } from "@nct/vtp-common";
+import {type DropDownDto, DropDownSchema, ValidateSchema} from "@nct/vtp-common";
 import p from "../lib/prisma";
+
 const prisma = p.prisma;
 
 
@@ -19,41 +20,42 @@ async function getDropDownData(type: string): Promise<DropDownDto[]> {
             type: type
         },
         orderBy: [
-            { type: "asc" },
-            { score: "desc" },
-            { value: "asc" },
+            {type: "asc"},
+            {score: "desc"},
+            {value: "asc"},
         ]
     });
-    return ValidateSchemaArray<DropDownDto[]>(data, DropDownSchema);
+    return ValidateSchema<DropDownDto>(data, DropDownSchema, true);
 }
 
 
 export async function getAllDropDownData(): Promise<DropDownDto[]> {
-    return ValidateSchemaArray<DropDownDto[]>(await prisma.dropDownData.findMany({
+    return ValidateSchema<DropDownDto>(await prisma.dropDownData.findMany({
         orderBy: [
-            { type: "asc" },
-            { score: "desc" },
-            { value: "asc" },
+            {type: "asc"},
+            {score: "desc"},
+            {value: "asc"},
         ]
-    }), DropDownSchema);
+    }), DropDownSchema, true);
 }
 
 
 export async function createDropDownData(body: any): Promise<DropDownDto> {
     let data = ValidateSchema<DropDownDto>(body, DropDownSchema);
-    if (data.value == "" || data.value == null || data.value == undefined)
+    if (data.value == "" || data.value == null)
         return data;
     data.key = data.type + '_' + data.value;
-    const existingData = await prisma.dropDownData.findFirst({ where: { key: data.key } });
+    const existingData = await prisma.dropDownData.findFirst({where: {key: data.key}});
     if (existingData === null) {
-        const responseBody = await prisma.dropDownData.create({ data: data as any });
+        const responseBody = await prisma.dropDownData.create({data: data as any});
         return ValidateSchema<DropDownDto>(responseBody, DropDownSchema);
     }
     return ValidateSchema<DropDownDto>(existingData, DropDownSchema);
 }
 
 
-export async function deleteDropDownData(key: string) {
+export async function deleteDropDownData(key: string): Promise<DropDownDto> {
     console.log(`Trying to delete DropDownData: ${key}`);
-    await prisma.dropDownData.delete({ where: { key: key } });
+    const rawData = await prisma.dropDownData.delete({where: {key: key}});
+    return ValidateSchema<DropDownDto>(rawData, DropDownSchema);
 }

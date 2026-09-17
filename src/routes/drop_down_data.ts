@@ -15,7 +15,8 @@ router.get('/genre', async (request, response) => {
 });
 
 router.delete('/:key', async (request, response) => {
-    await deleteDropDownData(request.params.key);
+    const deleted = await deleteDropDownData(request.params.key);
+    response.json(deleted);
 });
 
 router.get('/', async (request, response) => {

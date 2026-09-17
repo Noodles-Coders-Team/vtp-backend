@@ -43,8 +43,8 @@ router.get('/', async (request, response) => {
  *       200:
  *         description: OK
  */
-router.get('/:game-id', async (request, response) => {
-    const gameId = request.params.game;
+router.get('/:gameId', async (request, response) => {
+    const gameId = request.params.gameId;
     const gameRanks = await getAllRanksForGame(gameId);
     response.json(gameRanks);
 });

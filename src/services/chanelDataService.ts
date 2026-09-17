@@ -1,5 +1,6 @@
-import { ChannelDataDto, ChannelDataSchema, ValidateSchema } from "@nct/vtp-common";
+import {ChannelDataDto, ChannelDataSchema, ValidateSchema} from "@nct/vtp-common";
 import p from '../lib/prisma';
+
 const prisma = p.prisma;
 
 
@@ -19,12 +20,11 @@ export async function createChannelData(data: ChannelDataDto) {
             }
         });
         return created;
-    }
-    else {
+    } else {
         const data = ValidateSchema<ChannelDataDto>(existingData, ChannelDataSchema);
         data.views = channelData.views;
         const updated = await prisma.channelData.update({
-            where: { id: data.id },
+            where: {id: data.id},
             data: data
         });
         return updated;
@@ -33,6 +33,5 @@ export async function createChannelData(data: ChannelDataDto) {
 
 
 export async function getAllChannelData() {
-    const allChannellData = await prisma.channelData.findMany({ orderBy: { id: "asc" } });
-    return allChannellData;
+    return await prisma.channelData.findMany({orderBy: {id: "asc"}});
 }

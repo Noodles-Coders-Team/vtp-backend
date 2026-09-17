@@ -1,15 +1,21 @@
-import { ChannelDataDto, CreatePostInformationDto, CreateRankDto, GameDto, GameInfoDto, GameInfoSchema, GameSchema, PostDto, RankDto, ValidateSchema, type CreateGameDto, type CreateGameInfoDto } from "@nct/vtp-common";
-import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/class";
-import { createGame } from "./gameService";
-import { createGameInfo } from "./gameInfoService";
-import { _isoDateTime } from "zod/v4/core";
-import { createChannelData } from "./chanelDataService";
-import { createPost, createPostInformation } from "./postService";
-import { createRank } from "./rankService";
+import {
+    ChannelDataDto,
+    type CreateGameDto,
+    type CreateGameInfoDto,
+    CreatePostInformationDto,
+    CreateRankDto,
+    PostDto
+} from "@nct/vtp-common";
+import {ChannelDataCsv, GameCsv, TableDataCsv} from "../lib/class";
+import {createGame} from "./gameService";
+import {createGameInfo} from "./gameInfoService";
+import {createChannelData} from "./chanelDataService";
+import {createPost, createPostInformation} from "./postService";
+import {createRank} from "./rankService";
 
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
-    gameCsv.forEach(async (game: GameCsv) => {
+    for (const game of gameCsv) {
         const createGameSchema: CreateGameDto = {
             name: game.GameName,
             recorded: false,
@@ -25,7 +31,7 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             notes: game.Notes
         };
 
-        const createdInfo = await createGameInfo(createGameInfoSchema);
+        await createGameInfo(createGameInfoSchema);
 
         const createRankDto: CreateRankDto = {
             game_id: createdGame.id,
@@ -33,8 +39,8 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             rank: Number(game.Id)
         };
 
-        const createdRank = await createRank(createRankDto);
-    });
+        await createRank(createRankDto);
+    }
 }
 
 
@@ -49,26 +55,24 @@ function convertDate(date: string): string {
 
 //Import files have only TRUE/FALSE values
 function stringToBool(val: any): boolean {
-    if (val === "TRUE")
-        return true;
-    return false;
+    return val === "TRUE";
 }
 
 
 export async function importChannelDataCsv(channel_data: ChannelDataCsv[]) {
-    await channel_data.forEach(async (data: ChannelDataCsv) => {
+    for (const data of channel_data) {
         const channelDataDto: ChannelDataDto = {
             id: data.Date,
             views: Number(data.Views) as number
         };
 
         await createChannelData(channelDataDto);
-    });
+    }
 }
 
 
 export async function importTableDataCsv(table_data: TableDataCsv[]) {
-    table_data.forEach(async (data: TableDataCsv) => {
+    for (const data of table_data) {
         const post: PostDto = {
             id: data['Content'],
         };
@@ -81,63 +85,69 @@ export async function importTableDataCsv(table_data: TableDataCsv[]) {
             publish_time: formatDate(data['Video publish time']),
 
             duration: Number(data.Duration),
-            engaged_views: Number(data['Engaged views']),
+            engaged_views: parseNumber(data['Engaged views']),
 
             average_view_duration: data['Average view duration'], // Keep as '0:12:34' string
 
-            average_viewed_percent: Number(data['Average percentage viewed (%)']),
-            stayed_to_watch_percent: Number(data['Stayed to watch (%)']),
+            average_viewed_percent: parseNumber(data['Average percentage viewed (%)']),
+            stayed_to_watch_percent: parseNumber(data['Stayed to watch (%)']),
 
-            unique_viewers: Number(data['Unique viewers']),
-            unique_reach: Number(data['Unique reach']),
-            average_views_per_viewer: Number(data['Average views per viewer']),
-            new_viewers: Number(data['New viewers']),
-            returning_viewers: Number(data['Returning viewers']),
-            casual_viewers: Number(data['Casual viewers']),
-            regular_viewers: Number(data['Regular viewers']),
+            unique_viewers: parseNumber(data['Unique viewers']),
+            unique_reach: parseNumber(data['Unique reach']),
+            average_views_per_viewer: parseNumber(data['Average views per viewer']),
+            new_viewers: parseNumber(data['New viewers']),
+            returning_viewers: parseNumber(data['Returning viewers']),
+            casual_viewers: parseNumber(data['Casual viewers']),
+            regular_viewers: parseNumber(data['Regular viewers']),
 
-            hypes: Number(data.Hypes),
-            hype_points: Number(data['Hype points']),
-            subscribers_gained: Number(data['Subscribers gained']),
-            subscribers_lost: Number(data['Subscribers lost']),
+            hypes: parseNumber(data.Hypes),
+            hype_points: parseNumber(data['Hype points']),
+            subscribers_gained: parseNumber(data['Subscribers gained']),
+            subscribers_lost: parseNumber(data['Subscribers lost']),
 
-            likes: Number(data.Likes),
-            dislikes: Number(data.Dislikes),
-            likes_vs_dislikes_percent: Number(data['Likes (vs. dislikes) (%)']),
-            shares: Number(data.Shares),
-            comments_added: Number(data['Comments added']),
+            likes: parseNumber(data.Likes),
+            dislikes: parseNumber(data.Dislikes),
+            likes_vs_dislikes_percent: parseNumber(data['Likes (vs. dislikes) (%)']),
+            shares: parseNumber(data.Shares),
+            comments_added: parseNumber(data['Comments added']),
 
-            total_sales_usd: Number(data['Total sales (USD)']),
-            orders: Number(data.Orders),
-            approved_commissions_usd: Number(data['Approved commissions (USD)']),
-            pending_commissions_usd: Number(data['Pending commissions (USD)']),
-            removed_commission_usd: Number(data['Removed commission (USD)']),
+            total_sales_usd: parseNumber(data['Total sales (USD)']),
+            orders: parseNumber(data.Orders),
+            approved_commissions_usd: parseNumber(data['Approved commissions (USD)']),
+            pending_commissions_usd: parseNumber(data['Pending commissions (USD)']),
+            removed_commission_usd: parseNumber(data['Removed commission (USD)']),
 
-            youtube_premium_views: Number(data['YouTube Premium views']),
-            youtube_premium_watch_time_hours: Number(data['YouTube Premium watch time (hours)']),
-            playlist_watch_time_hours: Number(data['Playlist watch time (hours)']),
+            youtube_premium_views: parseNumber(data['YouTube Premium views']),
+            youtube_premium_watch_time_hours: parseNumber(data['YouTube Premium watch time (hours)']),
+            playlist_watch_time_hours: parseNumber(data['Playlist watch time (hours)']),
 
-            views_from_playlist: Number(data['Views from playlist']),
-            views_per_playlist_start: Number(data['Views per playlist start']),
-            hours_streamed: Number(data['Hours streamed']),
-            reminders_set: Number(data['Reminders set']),
-            chat_messages: Number(data['Chat messages']),
+            views_from_playlist: parseNumber(data['Views from playlist']),
+            views_per_playlist_start: parseNumber(data['Views per playlist start']),
+            hours_streamed: parseNumber(data['Hours streamed']),
+            reminders_set: parseNumber(data['Reminders set']),
+            chat_messages: parseNumber(data['Chat messages']),
 
-            reactions: Number(data.Reactions),
-            remix_count: Number(data['Remix count']),
-            remix_views: Number(data['Remix views']),
-            community_clip_views: Number(data['Community clip views']),
-            watch_time_from_community_clips_hours: Number(data['Watch time from community clips (hours)']),
+            reactions: parseNumber(data.Reactions),
+            remix_count: parseNumber(data['Remix count']),
+            remix_views: parseNumber(data['Remix views']),
+            community_clip_views: parseNumber(data['Community clip views']),
+            watch_time_from_community_clips_hours: parseNumber(data['Watch time from community clips (hours)']),
 
-            card_clicks: Number(data['Card clicks']),
-            cards_shown: Number(data['Cards shown']),
-            clicks_per_card_shown_percent: Number(data['Clicks per card shown (%)']),
+            card_clicks: parseNumber(data['Card clicks']),
+            cards_shown: parseNumber(data['Cards shown']),
+            clicks_per_card_shown_percent: parseNumber(data['Clicks per card shown (%)']),
         };
 
         await createPostInformation(tableData);
-    });
+    }
 }
 
+function parseNumber(n: any): number | undefined {
+    const result = Number(n);
+    if (Number.isNaN(result))
+        return undefined;
+    return result;
+}
 
 function formatDate(dateI: string): string | undefined {
     if (dateI == "")
@@ -146,8 +156,8 @@ function formatDate(dateI: string): string | undefined {
     //May 16, 2026
     const date = dateI.split(" ");
     let month: number = -1;
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    for (var j = 0; j < months.length; j++) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    for (let j = 0; j < months.length; j++) {
         if (date[0] == months[j]) {
             month = months.indexOf(months[j]) + 1;
         }
@@ -155,6 +165,5 @@ function formatDate(dateI: string): string | undefined {
     const monthString = month < 10 ? `0${month.toString()}` : month.toString();
     const day = date[1].slice(0, -1);
     const dateString = Number(day) < 10 ? `0${day}` : day;
-    const res = `${date[2]}-${monthString}-${dateString}`;
-    return res;
+    return `${date[2]}-${monthString}-${dateString}`;
 }
