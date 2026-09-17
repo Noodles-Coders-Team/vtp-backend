@@ -45,12 +45,13 @@ export async function createDropDownData(body: any): Promise<DropDownDto> {
     if (data.value == "" || data.value == null)
         return data;
     data.key = data.type + '_' + data.value;
-    const existingData = await prisma.dropDownData.findFirst({where: {key: data.key}});
-    if (existingData === null) {
-        const responseBody = await prisma.dropDownData.create({data: data as any});
-        return ValidateSchema<DropDownDto>(responseBody, DropDownSchema);
-    }
-    return ValidateSchema<DropDownDto>(existingData, DropDownSchema);
+    const dropDownData = await prisma.dropDownData.upsert(
+        {
+            where: {key: data.key},
+            create: data as any,
+            update: data as any,
+        });
+    return ValidateSchema<DropDownDto>(dropDownData, DropDownSchema);
 }
 
 

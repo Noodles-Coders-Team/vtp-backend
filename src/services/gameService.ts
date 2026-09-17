@@ -40,7 +40,7 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
         const {game_info, ...gameFields} = game;
         return {...game_info, ...gameFields};
     });
-    console.log(JSON.stringify(allGamesFlattened));
+
     let gamesWithInfoRaw = ValidateSchema<GameWithInfoDto>(allGamesFlattened, GameWithInfoSchema, true);
 
     const allTags = await getTagsDropDown();
@@ -89,7 +89,7 @@ export async function createGame(body: any): Promise<GameDto> {
     }
 
     const createdGame = await prisma.game.create({
-        data: body
+        data: game
     });
     await createGameInfo({game_id: createdGame.id} as CreateGameInfoDto);
 
@@ -97,18 +97,17 @@ export async function createGame(body: any): Promise<GameDto> {
 }
 
 
-export async function updateGame(id: string, game_body: any): Promise<GameDto> {
-    console.log("Updating game with ID: ", id, " with data: ", JSON.stringify(game_body, null, 2));
+export async function updateGame(id: string, body: any): Promise<GameDto> {
+    const game = ValidateSchema<GameDto>(body, GameSchema);
     const updatedGame = await prisma.game.update({
         where: {id: id},
-        data: game_body
+        data: game
     });
     return ValidateSchema<GameDto>(updatedGame, GameSchema);
 }
 
 
 export async function deleteGame(id: string): Promise<GameDto> {
-    console.log("Deleting game with ID: ", id);
     const deletedGame = await prisma.game.delete({
         where: {id: id}
     });

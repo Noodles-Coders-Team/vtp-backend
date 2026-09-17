@@ -32,6 +32,7 @@ export async function getLatestRankForGame(gameId: string): Promise<RankDto | nu
 }
 
 
+//TODO: Upgrade to upsert. Merge unique validation in DTO into one item (by date and game)
 export async function createRank(body: any): Promise<RankDto> {
     const rank = ValidateSchema<CreateRankDto>(body, CreateRankSchema);
     const existingRank = await prisma.rank.findFirst({

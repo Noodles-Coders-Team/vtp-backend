@@ -25,19 +25,24 @@ const upload = multer({ dest: "uploads/" })
  *   post:
  *     tags: [Import]
  *     summary: Import games from CSV file
+ *     description: >
+ *       Upserts a Game and its GameInformation per row, and records a Rank entry when the
+ *       row carries a queue position. Genre and tag cells are split into drop down values.
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required: [file]
  *             properties:
  *               file:
  *                 type: string
  *                 format: binary
+ *                 description: CSV file, sent as the `file` field
  *     responses:
  *       200:
- *         description: OK
+ *         description: Import finished, the parsed rows are echoed back
  *         content:
  *           application/json:
  *             schema:
@@ -95,19 +100,22 @@ router.post('/games',
  *   post:
  *     tags: [Import]
  *     summary: Import channel data from CSV file
+ *     description: Upserts one ChannelData row per date, keyed on the date column.
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required: [file]
  *             properties:
  *               file:
  *                 type: string
  *                 format: binary
+ *                 description: CSV file, sent as the `file` field
  *     responses:
  *       200:
- *         description: OK
+ *         description: Import finished, the parsed rows are echoed back
  *         content:
  *           application/json:
  *             schema:
@@ -141,35 +149,41 @@ router.post('/channel-data',
  * /import/table-data:
  *   post:
  *     tags: [Import]
- *     summary: Import table data from CSV file
+ *     summary: Import post table data from CSV file
+ *     description: >
+ *       Imports a YouTube Studio table export. Each row creates the parent post when it is
+ *       missing and then adds a new versioned PostInformation snapshot for it.
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required: [file]
  *             properties:
  *               file:
  *                 type: string
  *                 format: binary
+ *                 description: CSV file, sent as the `file` field
  *     responses:
  *       200:
- *         description: OK
+ *         description: Import finished
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 rows:
- *                   type: integer
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *     400:
- *       description: No file uploaded
- *     500:
- *       description: Internal server error
+ *               $ref: '#/components/schemas/ImportResult'
+ *       400:
+ *         description: No file uploaded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Import failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/table-data',
     upload.single("file"),

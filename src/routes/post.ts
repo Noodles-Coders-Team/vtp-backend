@@ -20,6 +20,14 @@ const router = Router();
  *     responses:
  *       200:
  *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/', async (request, response) => {
     const allPosts = await prisma.prisma.post.findMany();
@@ -37,11 +45,18 @@ router.get('/', async (request, response) => {
  *       - in: path
  *         name: id
  *         required: true
+ *         description: External post identifier, e.g. the YouTube video id
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: OK
+ *         description: The post, or `null` when no post has that id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/:id', async (request, response) => {
     const postId = request.params.id;
@@ -58,16 +73,24 @@ router.get('/:id', async (request, response) => {
  *   post:
  *     tags: [Posts]
  *     summary: Create a post
+ *     description: The `id` is supplied by the caller, it is not generated server side.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             description: Post entity data
+ *             $ref: '#/components/schemas/Post'
  *     responses:
  *       201:
  *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.post('/', async (request, response) => {
     const post = request.body;
@@ -95,11 +118,20 @@ router.post('/', async (request, response) => {
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             description: Post fields to update
+ *             $ref: '#/components/schemas/Post'
  *     responses:
  *       200:
- *         description: OK
+ *         description: The updated post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.put('/:id', async (request, response) => {
     const postId = request.params.id;
@@ -126,7 +158,15 @@ router.put('/:id', async (request, response) => {
  *           type: string
  *     responses:
  *       200:
- *         description: OK
+ *         description: The deleted post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.delete('/:id', async (request, response) => {
     const postId = request.params.id;

@@ -20,6 +20,14 @@ const router = Router();
  *     responses:
  *       200:
  *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Rank'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/', async (request, response) => {
     const allRanks = await getAllRanks();
@@ -29,19 +37,29 @@ router.get('/', async (request, response) => {
 
 /**
  * @swagger
- * /rank/{id}:
+ * /rank/{gameId}:
  *   get:
  *     tags: [Ranks]
- *     summary: Get rank by ID
+ *     summary: List the rank history of a single game
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: gameId
  *         required: true
+ *         description: ID of the game whose ranks should be returned
  *         schema:
  *           type: string
+ *           format: uuid
  *     responses:
  *       200:
- *         description: OK
+ *         description: Every rank recorded for the game, empty array if there are none
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Rank'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/:gameId', async (request, response) => {
     const gameId = request.params.gameId;
@@ -61,11 +79,18 @@ router.get('/:gameId', async (request, response) => {
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             description: Rank entity data
+ *             $ref: '#/components/schemas/CreateRank'
  *     responses:
  *       201:
  *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Rank'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.post('/', async (request, response) => {
     const createdRank = await createRank(request.body);
@@ -85,9 +110,18 @@ router.post('/', async (request, response) => {
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     responses:
  *       200:
- *         description: OK
+ *         description: The deleted rank
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Rank'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.delete('/:id', async (request, response) => {
     const deletedRank = await deleteRank(request.params.id);

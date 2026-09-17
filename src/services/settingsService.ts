@@ -16,15 +16,15 @@ export async function getSettingByKey(key: string): Promise<SettingDto> {
 }
 
 
-export async function createSetting(setting: any): Promise<SettingDto> {
-    ValidateSchema<SettingDto>(setting, SettingSchema)
+export async function createSetting(body: any): Promise<SettingDto> {
+    const setting = ValidateSchema<SettingDto>(body, SettingSchema);
     const created = await prisma.settings.create({data: setting});
     return ValidateSchema<SettingDto>(created, SettingSchema);
 }
 
 
-export async function updateSetting(setting: any): Promise<SettingDto> {
-    ValidateSchema<SettingDto>(setting, SettingSchema);
+export async function updateSetting(body: any): Promise<SettingDto> {
+    const setting = ValidateSchema<SettingDto>(body, SettingSchema);
     const updated = await prisma.settings.update({data: setting, where: {key: setting.key}});
     return ValidateSchema<SettingDto>(updated, SettingSchema);
 }

@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { CreateUserSchema } from "@nct/vtp-common";
-import { validateRequest } from "../middleware/validate";
+import {Router} from "express";
+import {CreateUserSchema} from "@nct/vtp-common";
+import {validateRequest} from "../middleware/validate";
 import prisma from "../lib/prisma";
 
 
@@ -22,6 +22,14 @@ const router = Router();
  *     responses:
  *       200:
  *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/', async (request, response) => {
     const allUsers = await prisma.prisma.users.findMany();
@@ -43,11 +51,17 @@ router.get('/', async (request, response) => {
  *           type: string
  *     responses:
  *       200:
- *         description: OK
+ *         description: The user, or `null` when no user has that login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/:login', async (request, response) => {
     const login = request.params.login;
-    const allUsers = await prisma.prisma.users.findFirst({ where: { login: login } });
+    const allUsers = await prisma.prisma.users.findFirst({where: {login: login}});
     response.json(allUsers);
 });
 
@@ -58,28 +72,24 @@ router.get('/:login', async (request, response) => {
  *   post:
  *     tags: [Users]
  *     summary: Create a user
+ *     description: The body is validated against `CreateUserSchema` from `@nct/vtp-common`.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               login:
- *                 type: string
- *                 minLength: 2
- *                 maxLength: 100
- *               user_name:
- *                 type: string
- *                 minLength: 2
- *                 maxLength: 100
- *               permission_level:
- *                 type: string
- *                 maxLength: 100
- *             required: [login]
+ *             $ref: '#/components/schemas/CreateUser'
  *     responses:
  *       201:
  *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.post('/create', validateRequest(CreateUserSchema), async (request, response) => {
     const user = request.body;
@@ -92,33 +102,8 @@ router.post('/create', validateRequest(CreateUserSchema), async (request, respon
 
 /**
  * @swagger
- * /users/delete/byId/{id}:
- *   post:
- *     tags: [Users]
- *     summary: Delete user by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: OK
- */
-router.post('/delete/byId/:id', async (request, response) => {
-    const userId = request.params.id;
-    const deletedUser = await prisma.prisma.users.delete({
-        where: { login: userId }
-    });
-    response.status(200).json(deletedUser);
-});
-
-
-/**
- * @swagger
  * /users/delete/byLogin/{login}:
- *   post:
+ *   delete:
  *     tags: [Users]
  *     summary: Delete user by login
  *     parameters:
@@ -129,12 +114,20 @@ router.post('/delete/byId/:id', async (request, response) => {
  *           type: string
  *     responses:
  *       200:
- *         description: OK
+ *         description: The deleted user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
-router.post('/delete/byLogin/:login', async (request, response) => {
+router.delete('/delete/byLogin/:login', async (request, response) => {
     const userLogin = request.params.login;
     const deletedUser = await prisma.prisma.users.delete({
-        where: { login: userLogin }
+        where: {login: userLogin}
     });
     response.status(200).json(deletedUser);
 });

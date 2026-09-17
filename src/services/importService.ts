@@ -9,7 +9,7 @@ import {
 import {ChannelDataCsv, GameCsv, TableDataCsv} from "../lib/class";
 import {createGame} from "./gameService";
 import {createGameInfo} from "./gameInfoService";
-import {createChannelData} from "./chanelDataService";
+import {createChannelData} from "./channelDataService";
 import {createPost, createPostInformation} from "./postService";
 import {createRank} from "./rankService";
 

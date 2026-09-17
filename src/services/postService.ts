@@ -15,12 +15,12 @@ const prisma = p.prisma;
 export async function createPost(postDto: PostDto): Promise<PostDto> {
     const post = ValidateSchema<PostDto>(postDto, PostSchema);
 
-    const existingPost = await prisma.post.findFirst({where: {id: post.id}});
-    if (existingPost === null) {
-        const result = await prisma.post.create({data: post as any});
-        return ValidateSchema<PostDto>(result, PostSchema);
-    }
-    return ValidateSchema<PostDto>(existingPost, PostSchema);
+    const createdPost = await prisma.post.upsert({
+        where: {id: post.id},
+        create: post as any,
+        update: post as any,
+    });
+    return ValidateSchema<PostDto>(createdPost, PostSchema);
 }
 
 
