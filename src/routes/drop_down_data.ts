@@ -64,6 +64,13 @@ router.get('/genre', async (request, response) => {
  *   delete:
  *     tags: [DropDownData]
  *     summary: Delete a drop down value by key
+ *     description: >
+ *       A key that matches no row raises a Prisma `P2025` and comes back as a 500.
+ *
+ *
+ *       Deleting an entry does not strip the corresponding string from the `genre` or
+ *       `tags` arrays of any game. Those games keep the value and it simply stops
+ *       contributing to `game_score`.
  *     parameters:
  *       - in: path
  *         name: key
@@ -78,8 +85,6 @@ router.get('/genre', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/DropDownData'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -119,8 +124,20 @@ router.get('/', async (request, response) => {
  *     tags: [DropDownData]
  *     summary: Create or update a drop down value
  *     description: >
- *       Upsert keyed on `<type>_<value>`, so posting an existing pair updates its score
- *       instead of failing. A blank `value` is a no-op and is echoed back unsaved.
+ *       Upsert keyed on `key`, so posting an existing pair updates its score instead of
+ *       failing. Note the 200: this endpoint does not answer 201, and the response does not
+ *       distinguish an insert from an update.
+ *
+ *
+ *       `key` has to be present in the body even though the server derives it. Send an
+ *       empty string to have it filled in as `<type>_<value>`, or send the exact key
+ *       yourself; omitting the field fails validation and comes back as a 500. Sending a
+ *       key that does not match `<type>_<value>` is not rejected, and stores a row whose
+ *       key disagrees with its own fields.
+ *
+ *
+ *       Nothing filters out a blank `value`: posting one stores a row under the key
+ *       `<type>_`.
  *     requestBody:
  *       required: true
  *       content:
@@ -134,8 +151,6 @@ router.get('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/DropDownData'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

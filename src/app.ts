@@ -15,6 +15,7 @@ import {swaggerSpec} from './config/swagger';
 const app = express();
 app.use(express.json());
 
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(cors({
@@ -35,5 +36,15 @@ app.use('/settings', settingRouter);
 // Another wy for adding validation
 //app.use('/users', validate(CreateUserSchema), usersRouter);
 
+app.use((req, res) =>
+    res.status(404).json({error: 'Not found'}));
 
+app.use((err, req, res, next) => {
+    console.error(err.stack); // Log the error
+
+    res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+    });
+});
 export default app;

@@ -19,6 +19,9 @@ const router = Router();
  *   get:
  *     tags: [Users]
  *     summary: List all users
+ *     description: >
+ *       Returns every user in no particular order. Queries Prisma directly without a DTO
+ *       check, so rows are returned as stored.
  *     responses:
  *       200:
  *         description: OK
@@ -43,6 +46,9 @@ router.get('/', async (request, response) => {
  *   get:
  *     tags: [Users]
  *     summary: Get user by login
+ *     description: >
+ *       Queries Prisma directly without a DTO check, so an unknown login is answered with
+ *       `200` and a literal `null` body rather than a 404.
  *     parameters:
  *       - in: path
  *         name: login
@@ -72,7 +78,14 @@ router.get('/:login', async (request, response) => {
  *   post:
  *     tags: [Users]
  *     summary: Create a user
- *     description: The body is validated against `CreateUserSchema` from `@nct/vtp-common`.
+ *     description: >
+ *       The only endpoint that runs the `validateRequest` middleware, so it is also the
+ *       only one that answers a bad body with a 400 instead of a 500. The response body in
+ *       that case is a serialised `ZodError`, not the usual error shape.
+ *
+ *
+ *       `login` is the primary key and is supplied by the caller; re-posting an existing
+ *       login raises a Prisma unique constraint violation and comes back as a 500.
  *     requestBody:
  *       required: true
  *       content:
@@ -106,6 +119,7 @@ router.post('/create', validateRequest(CreateUserSchema), async (request, respon
  *   delete:
  *     tags: [Users]
  *     summary: Delete user by login
+ *     description: A login that matches no row raises a Prisma `P2025` and comes back as a 500.
  *     parameters:
  *       - in: path
  *         name: login
@@ -119,8 +133,6 @@ router.post('/create', validateRequest(CreateUserSchema), async (request, respon
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

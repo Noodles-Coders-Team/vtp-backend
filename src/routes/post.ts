@@ -17,6 +17,9 @@ const router = Router();
  *   get:
  *     tags: [Posts]
  *     summary: List all posts
+ *     description: >
+ *       Returns every post in no particular order, without its statistic snapshots. Queries
+ *       Prisma directly without a DTO check.
  *     responses:
  *       200:
  *         description: OK
@@ -41,6 +44,17 @@ router.get('/', async (request, response) => {
  *   get:
  *     tags: [Posts]
  *     summary: Get post by ID
+ *     description: >
+ *       Queries Prisma directly without a DTO check, so an unknown id is answered with
+ *       `200` and a literal `null` body rather than a 404.
+ *
+ *
+ *       **Known defect:** this router is mounted on `/post` ahead of the PostInformation
+ *       router on `/post/information`, and `/:id` matches a single segment, so a
+ *       `GET /post/information` is served here with `id` set to the literal string
+ *       `information` and answers `null`. `GET /post/information` can therefore never
+ *       reach its own handler. The deeper `/post/information/{id}` paths are unaffected,
+ *       as are the other methods.
  *     parameters:
  *       - in: path
  *         name: id
@@ -73,7 +87,11 @@ router.get('/:id', async (request, response) => {
  *   post:
  *     tags: [Posts]
  *     summary: Create a post
- *     description: The `id` is supplied by the caller, it is not generated server side.
+ *     description: >
+ *       The `id` is supplied by the caller, it is not generated server side. The body is
+ *       handed to Prisma unvalidated, so an unknown field or a duplicate `id` fails inside
+ *       Prisma and comes back as a 500. `game_id` is a loose reference: it is not declared
+ *       as a relation and carries no foreign key, so any string is accepted.
  *     requestBody:
  *       required: true
  *       content:
@@ -87,8 +105,6 @@ router.get('/:id', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Post'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -107,6 +123,9 @@ router.post('/', async (request, response) => {
  *   put:
  *     tags: [Posts]
  *     summary: Update a post by ID
+ *     description: >
+ *       The body is passed to Prisma as the update payload, so only the fields present are
+ *       written. An id that matches no row raises a Prisma `P2025` and comes back as a 500.
  *     parameters:
  *       - in: path
  *         name: id
@@ -126,10 +145,6 @@ router.post('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Post'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -150,6 +165,11 @@ router.put('/:id', async (request, response) => {
  *   delete:
  *     tags: [Posts]
  *     summary: Delete a post by ID
+ *     description: >
+ *       Deletes only the `post` row. Its `post_info` snapshots are not cascaded - the
+ *       foreign key is `ON DELETE RESTRICT` - so a post that has been imported cannot be
+ *       deleted until its snapshots are removed first. That, and an id that matches no
+ *       row, both come back as a 500.
  *     parameters:
  *       - in: path
  *         name: id
@@ -163,8 +183,6 @@ router.put('/:id', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Post'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

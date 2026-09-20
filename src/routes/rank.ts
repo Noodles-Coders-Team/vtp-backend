@@ -17,6 +17,13 @@ const router = Router();
  *   get:
  *     tags: [Ranks]
  *     summary: List all ranks
+ *     description: >
+ *       Returns every rank row across all games, in no particular order.
+ *
+ *
+ *       **Known defect:** each row is validated against `RankSchema`, which types `date` as
+ *       a string while Prisma hydrates it into a `Date`. As soon as one rank row exists this
+ *       call fails validation and comes back as a 500. See the `Rank` schema for detail.
  *     responses:
  *       200:
  *         description: OK
@@ -41,6 +48,13 @@ router.get('/', async (request, response) => {
  *   get:
  *     tags: [Ranks]
  *     summary: List the rank history of a single game
+ *     description: >
+ *       Ordered by date descending, so the current position is first. An unknown game id is
+ *       not an error, it simply yields an empty array.
+ *
+ *
+ *       **Known defect:** a game that does have ranks fails validation and comes back as a
+ *       500, for the reason described on the `Rank` schema. Only the empty case succeeds.
  *     parameters:
  *       - in: path
  *         name: gameId
@@ -73,7 +87,20 @@ router.get('/:gameId', async (request, response) => {
  * /rank:
  *   post:
  *     tags: [Ranks]
- *     summary: Create a rank
+ *     summary: Create or replace the rank of a game on a date
+ *     description: >
+ *       Despite the name and the 201, this behaves as an upsert: it looks for a rank with
+ *       the same `game_id` and `date` and updates it if one exists, otherwise it inserts a
+ *       new row. The status is 201 either way. Any `id` in the body is ignored for matching.
+ *
+ *
+ *       `game_id` must reference an existing game; the foreign key is enforced, so a
+ *       dangling reference comes back as a 500.
+ *
+ *
+ *       **Known defect:** the created or updated row is validated against `RankSchema` on
+ *       the way out, which rejects the `Date` Prisma returns. The write is committed, but
+ *       the response is a 500. See the `Rank` schema for detail.
  *     requestBody:
  *       required: true
  *       content:
@@ -82,13 +109,11 @@ router.get('/:gameId', async (request, response) => {
  *             $ref: '#/components/schemas/CreateRank'
  *     responses:
  *       201:
- *         description: Created
+ *         description: The created or updated rank
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Rank'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -104,6 +129,13 @@ router.post('/', async (request, response) => {
  *   delete:
  *     tags: [Ranks]
  *     summary: Delete a rank by ID
+ *     description: >
+ *       An id that matches no row raises a Prisma `P2025` and comes back as a 500.
+ *
+ *
+ *       **Known defect:** the deleted row is validated against `RankSchema` on the way out,
+ *       which rejects the `Date` Prisma returns, so the delete is committed but the
+ *       response is a 500. See the `Rank` schema for detail.
  *     parameters:
  *       - in: path
  *         name: id
@@ -118,8 +150,6 @@ router.post('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Rank'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

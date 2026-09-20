@@ -17,6 +17,7 @@ const router = Router();
  *   get:
  *     tags: [Settings]
  *     summary: List all settings
+ *     description: Returns every setting in no particular order.
  *     responses:
  *       200:
  *         description: OK
@@ -41,6 +42,9 @@ router.get('/', async (request, response) => {
  *   get:
  *     tags: [Settings]
  *     summary: Get a setting by key
+ *     description: >
+ *       An unknown key does not produce a 404. The lookup returns `null`, which is then
+ *       validated against `SettingSchema`, fails, and surfaces as a 500.
  *     parameters:
  *       - in: path
  *         name: key
@@ -54,8 +58,6 @@ router.get('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Setting'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -71,6 +73,11 @@ router.get('/:key', async (request, response) => {
  *   post:
  *     tags: [Settings]
  *     summary: Create a setting
+ *     description: >
+ *       A plain insert, not an upsert. `key` is the primary key and is supplied by the
+ *       caller, so re-posting an existing key raises a unique constraint violation and
+ *       comes back as a 500, as does a body that fails `SettingSchema`. Note the 200:
+ *       this endpoint does not answer 201.
  *     requestBody:
  *       required: true
  *       content:
@@ -84,8 +91,6 @@ router.get('/:key', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Setting'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -101,7 +106,10 @@ router.post('/', async (request, response) => {
  *   put:
  *     tags: [Settings]
  *     summary: Update a setting
- *     description: The setting to update is identified by the `key` in the body, not by a path parameter.
+ *     description: >
+ *       The setting to update is identified by the `key` in the body, not by a path
+ *       parameter. A key that matches no row raises a Prisma `P2025` and comes back as a
+ *       500, as does a body that fails `SettingSchema`.
  *     requestBody:
  *       required: true
  *       content:
@@ -115,10 +123,6 @@ router.post('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Setting'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -134,6 +138,7 @@ router.put('/', async (request, response) => {
  *   delete:
  *     tags: [Settings]
  *     summary: Delete a setting by key
+ *     description: A key that matches no row raises a Prisma `P2025` and comes back as a 500.
  *     parameters:
  *       - in: path
  *         name: key
@@ -147,8 +152,6 @@ router.put('/', async (request, response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Setting'
- *       404:
- *         $ref: '#/components/responses/NotFound'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

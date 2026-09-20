@@ -42,9 +42,6 @@ export async function getAllDropDownData(): Promise<DropDownDto[]> {
 
 export async function createDropDownData(body: any): Promise<DropDownDto> {
     let data = ValidateSchema<DropDownDto>(body, DropDownSchema);
-    if (data.value == "" || data.value == null)
-        return data;
-    data.key = data.type + '_' + data.value;
     const dropDownData = await prisma.dropDownData.upsert(
         {
             where: {key: data.key},
@@ -56,7 +53,6 @@ export async function createDropDownData(body: any): Promise<DropDownDto> {
 
 
 export async function deleteDropDownData(key: string): Promise<DropDownDto> {
-    console.log(`Trying to delete DropDownData: ${key}`);
     const rawData = await prisma.dropDownData.delete({where: {key: key}});
     return ValidateSchema<DropDownDto>(rawData, DropDownSchema);
 }

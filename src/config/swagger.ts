@@ -13,7 +13,25 @@ export const swaggerSpec = swaggerJsdoc({
                 "contracts with the `@nct/vtp-common` package, where every DTO is declared as a",
                 "zod schema. The schemas below mirror those DTOs.",
                 "",
-                "There is currently no authentication layer - every endpoint is public."
+                "There is currently no authentication layer - every endpoint is public.",
+                "",
+                "### Error handling",
+                "",
+                "Route handlers do not catch their own errors (the CSV import endpoints are the",
+                "one exception). Express 5 forwards a rejected handler promise to the global error",
+                "middleware in `app.ts`, so **almost every failure surfaces as `500`**, including",
+                "cases another API would report as `404` or `400`:",
+                "",
+                "- a DTO that fails its zod `ValidateSchema` check, either on the way in or on the",
+                "  way back out of Prisma;",
+                "- a lookup by id that finds nothing, because the resulting `null` then fails",
+                "  schema validation;",
+                "- a Prisma `update`/`delete` against a row that does not exist (`P2025`).",
+                "",
+                "A `404` is only ever produced by the catch-all in `app.ts` for a path that matches",
+                "no route at all. A `400` is only produced by the `validateRequest` middleware,",
+                "which is currently wired up on `POST /users/create` alone, and by the CSV import",
+                "endpoints when no file is attached."
             ].join("\n")
         },
         servers: [
@@ -35,15 +53,51 @@ export const swaggerSpec = swaggerJsdoc({
         ],
         components: {
             schemas: {
-                Error: {
+                ServerErrorBody: {
                     type: "object",
+                    description: "Body produced by the global error middleware in `app.ts`.",
                     properties: {
-                        error: {type: "string"},
-                        message: {type: "string"}
+                        success: {type: "boolean", example: false},
+                        message: {
+                            type: "string",
+                            description: "`err.message`, or `Internal Server Error` when it is empty",
+                            example: "Invalid data: ZodError: ..."
+                        }
+                    }
+                },
+                SimpleErrorBody: {
+                    type: "object",
+                    description: "Single field error body used by the 404 catch-all and the import endpoints.",
+                    properties: {
+                        error: {type: "string", example: "Not found"}
+                    }
+                },
+                MessageErrorBody: {
+                    type: "object",
+                    description: "Error body returned by the CSV import endpoints own try/catch.",
+                    properties: {
+                        message: {type: "string", example: "Import failed!"}
+                    }
+                },
+                ZodValidationError: {
+                    type: "object",
+                    description: [
+                        "A serialised zod `ZodError`. `validateRequest` passes the error straight to",
+                        "`res.json`, so the issue list arrives as a JSON string inside `message`",
+                        "rather than as a nested array."
+                    ].join(" "),
+                    properties: {
+                        name: {type: "string", example: "ZodError"},
+                        message: {
+                            type: "string",
+                            description: "JSON encoded array of zod issues",
+                            example: "[\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"user_name\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"
+                        }
                     }
                 },
                 User: {
                     type: "object",
+                    description: "Mirrors `UserSchema` in `@nct/vtp-common`.",
                     required: ["login", "user_name"],
                     properties: {
                         login: {type: "string", minLength: 2, maxLength: 100},
@@ -58,11 +112,16 @@ export const swaggerSpec = swaggerJsdoc({
                 },
                 CreateUser: {
                     type: "object",
+                    description: [
+                        "The create payload is identical to `User`: `@nct/vtp-common` exports a single",
+                        "`UserSchema` and `login` is itself the primary key, so there is nothing for the",
+                        "server to generate."
+                    ].join(" "),
                     required: ["login", "user_name"],
                     properties: {
                         login: {type: "string", minLength: 2, maxLength: 100},
                         user_name: {type: "string", minLength: 2, maxLength: 100},
-                        permission_level: {type: "string", maxLength: 100}
+                        permission_level: {type: "string", maxLength: 100, nullable: true}
                     }
                 },
                 Game: {
@@ -71,7 +130,20 @@ export const swaggerSpec = swaggerJsdoc({
                     properties: {
                         id: {type: "string", format: "uuid"},
                         name: {type: "string"},
-                        release_date: {type: "string", format: "date-time", nullable: true},
+                        release_date: {
+                            type: "string",
+                            format: "date-time",
+                            nullable: true,
+                            description: [
+                                "Returned as an ISO timestamp.",
+                                "",
+                                "**Known defect:** the DTO types this field as `z.date()`, which accepts a",
+                                "`Date` instance but not the ISO string a JSON body carries. Reads are fine,",
+                                "because Prisma hands back a real `Date`, but a write that carries a",
+                                "non-null `release_date` is rejected and surfaces as a 500. In practice the",
+                                "field can only be sent as `null` or left out."
+                            ].join("\n")
+                        },
                         link: {type: "string", nullable: true},
                         recorded: {type: "boolean"}
                     }
@@ -81,7 +153,12 @@ export const swaggerSpec = swaggerJsdoc({
                     required: ["name", "recorded"],
                     properties: {
                         name: {type: "string"},
-                        release_date: {type: "string", format: "date-time", nullable: true},
+                        release_date: {
+                            type: "string",
+                            format: "date-time",
+                            nullable: true,
+                            description: "Send `null` or omit it - see the note on `Game.release_date`"
+                        },
                         link: {type: "string", nullable: true},
                         recorded: {type: "boolean"}
                     }
@@ -123,21 +200,44 @@ export const swaggerSpec = swaggerJsdoc({
                 },
                 Rank: {
                     type: "object",
+                    description: [
+                        "A queue position recorded for a game on a given date.",
+                        "",
+                        "**Known defect:** `RankSchema` in `@nct/vtp-common` types `date` as a plain",
+                        "string, but Prisma hydrates the `rank.date` column into a `Date`. Every read",
+                        "path validates the Prisma row against that schema, so the check fails with",
+                        "`expected string, received Date` and the request ends as a `500`. This",
+                        "affects every operation under the `Ranks` tag as soon as one rank row exists,",
+                        "and `POST /games/with-info`, which reads the latest rank per game."
+                    ].join("\n"),
                     required: ["id", "game_id", "date", "rank"],
                     properties: {
                         id: {type: "string", format: "uuid"},
                         game_id: {type: "string", format: "uuid"},
-                        date: {type: "string", format: "date-time"},
-                        rank: {type: "number"}
+                        date: {
+                            type: "string",
+                            format: "date-time",
+                            description: "Declared as a string by the DTO, stored as a timestamp by Prisma"
+                        },
+                        rank: {type: "number", description: "Stored as a float, 50 is treated as neutral"}
                     }
                 },
                 CreateRank: {
                     type: "object",
                     required: ["game_id", "date", "rank"],
                     properties: {
-                        id: {type: "string", format: "uuid", nullable: true},
+                        id: {
+                            type: "string",
+                            format: "uuid",
+                            nullable: true,
+                            description: "Accepted but ignored, the row is matched on game_id plus date"
+                        },
                         game_id: {type: "string", format: "uuid"},
-                        date: {type: "string", description: "Date string, parsed server side"},
+                        date: {
+                            type: "string",
+                            format: "date-time",
+                            description: "Must be a string, it is handed to Prisma as the timestamp value"
+                        },
                         rank: {type: "number"}
                     }
                 },
@@ -159,7 +259,7 @@ export const swaggerSpec = swaggerJsdoc({
                         "optional because the source CSV export only carries the metrics that apply",
                         "to that post type (video, short, live stream, ...)."
                     ].join(" "),
-                    required: ["id", "post_id", "duration", "version_id"],
+                    required: ["id", "import_date", "post_id", "category", "post_title", "duration"],
                     properties: {
                         id: {type: "string", format: "uuid"},
                         post_id: {type: "string"},
@@ -172,9 +272,19 @@ export const swaggerSpec = swaggerJsdoc({
                         category: {
                             type: "string",
                             nullable: true,
-                            description: "Post, Shorts or Video - derived from duration on import"
+                            description: [
+                                "Intended to hold Post, Shorts or Video, classified from `duration`.",
+                                "Nothing derives it today - `POST /import/table-data` writes a literal",
+                                "`null` - so it is only ever set by a caller writing it directly.",
+                                "The key must be present in a request body, send null rather than",
+                                "omitting it."
+                            ].join(" ")
                         },
-                        post_title: {type: "string", nullable: true},
+                        post_title: {
+                            type: "string",
+                            nullable: true,
+                            description: "The key must be present, send null rather than omitting it"
+                        },
                         publish_time: {type: "string", nullable: true},
                         duration: {
                             type: "integer",
@@ -227,21 +337,42 @@ export const swaggerSpec = swaggerJsdoc({
                     type: "object",
                     required: ["id", "views"],
                     properties: {
-                        id: {type: "string", description: "Date of the measurement, used as the key"},
-                        views: {type: "integer"}
+                        id: {
+                            type: "string",
+                            description: [
+                                "Date of the measurement, used as the primary key. Stored exactly as the",
+                                "imported CSV spelled it - it is never parsed or normalised - so the format",
+                                "is whatever the source file used."
+                            ].join(" "),
+                            example: "2026-09-20"
+                        },
+                        views: {type: "integer", description: "View counter for that date"}
                     }
                 },
                 DropDownData: {
                     type: "object",
-                    required: ["value", "score", "type"],
+                    required: ["key", "value", "score", "type"],
                     properties: {
                         key: {
                             type: "string",
-                            nullable: true,
-                            description: "Generated server side as `<type>_<value>`; ignored on write"
+                            description: [
+                                "Primary key, in the form `<type>_<value>`.",
+                                "",
+                                "`DropDownSchema` declares this field as a required string and only fills it",
+                                "in afterwards, when the supplied value is falsy. Omitting the field is",
+                                "therefore rejected, but sending an empty string is not: pass `\"\"` to have",
+                                "the server derive the key, or pass the exact `<type>_<value>` yourself."
+                            ].join("\n"),
+                            example: "tag_horror"
                         },
                         value: {type: "string"},
-                        score: {type: "integer", description: "Weight used when scoring a game"},
+                        score: {
+                            type: "integer",
+                            description: [
+                                "Weight used when scoring a game. The DTO accepts any number, but the",
+                                "column is an integer, so a fractional score is rejected by the database."
+                            ].join(" ")
+                        },
                         type: {type: "string", example: "tag"}
                     }
                 },
@@ -268,26 +399,61 @@ export const swaggerSpec = swaggerJsdoc({
             },
             responses: {
                 ValidationError: {
-                    description: "Request body failed schema validation",
+                    description: [
+                        "Request body failed schema validation in the `validateRequest` middleware.",
+                        "Only `POST /users/create` is wired up with that middleware; on every other",
+                        "endpoint a bad body fails inside the service instead and comes back as a 500."
+                    ].join(" "),
                     content: {
                         "application/json": {
-                            schema: {$ref: "#/components/schemas/Error"}
+                            schema: {$ref: "#/components/schemas/ZodValidationError"}
                         }
                     }
                 },
                 NotFound: {
-                    description: "The requested entity does not exist",
+                    description: [
+                        "No route matched the request path. Returned by the catch-all in `app.ts`,",
+                        "never by an individual handler - a request for an entity that does not exist",
+                        "fails during validation or in Prisma and comes back as a 500."
+                    ].join(" "),
                     content: {
                         "application/json": {
-                            schema: {$ref: "#/components/schemas/Error"}
+                            schema: {$ref: "#/components/schemas/SimpleErrorBody"}
                         }
                     }
                 },
                 ServerError: {
-                    description: "Unexpected server error",
+                    description: [
+                        "Unhandled error, surfaced by the global error middleware. Besides genuine",
+                        "faults this also covers a missing row on update/delete (Prisma `P2025`), a",
+                        "lookup by id that matched nothing, and any request or response body that",
+                        "fails its zod DTO."
+                    ].join(" "),
                     content: {
                         "application/json": {
-                            schema: {$ref: "#/components/schemas/Error"}
+                            schema: {$ref: "#/components/schemas/ServerErrorBody"}
+                        }
+                    }
+                },
+                NoFileUploaded: {
+                    description: "No file was attached to the `file` field of the multipart body",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                allOf: [{$ref: "#/components/schemas/SimpleErrorBody"}],
+                                example: {error: "No File uploaded"}
+                            }
+                        }
+                    }
+                },
+                ImportFailed: {
+                    description: [
+                        "The upload could not be parsed or persisted. Caught by the import handler",
+                        "itself, so the body differs from the usual 500 shape."
+                    ].join(" "),
+                    content: {
+                        "application/json": {
+                            schema: {$ref: "#/components/schemas/MessageErrorBody"}
                         }
                     }
                 }

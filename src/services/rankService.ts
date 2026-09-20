@@ -15,8 +15,6 @@ export async function getAllRanksForGame(gameId: string): Promise<RankDto[]> {
         where: {game_id: gameId},
         orderBy: {date: "desc"}
     });
-    if (data === null)
-        return [];
     return ValidateSchema<RankDto>(data, RankSchema, true);
 }
 
@@ -62,7 +60,6 @@ async function updateRank(id: string, body: any): Promise<RankDto> {
 
 
 export async function deleteRank(rankId: string): Promise<RankDto> {
-    console.log("Deleting rank with ID: ", rankId);
     const deletedRank = await prisma.rank.delete({
         where: {id: rankId}
     });

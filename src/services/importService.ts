@@ -80,6 +80,7 @@ export async function importTableDataCsv(table_data: TableDataCsv[]) {
         await createPost(post);
 
         const tableData: CreatePostInformationDto = {
+            category: null,
             post_id: data['Content'],
             post_title: data['Video title'],
             publish_time: formatDate(data['Video publish time']),
