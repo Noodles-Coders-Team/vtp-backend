@@ -15,7 +15,7 @@ export async function getGenreDropDown(): Promise<DropDownDto[]> {
 
 
 async function getDropDownData(type: string): Promise<DropDownDto[]> {
-    const data = await prisma.dropDownData.findMany({
+    return await prisma.dropDownData.findMany({
         where: {
             type: type
         },
@@ -25,34 +25,31 @@ async function getDropDownData(type: string): Promise<DropDownDto[]> {
             {value: "asc"},
         ]
     });
-    return ValidateSchema<DropDownDto>(data, DropDownSchema, true);
 }
 
 
 export async function getAllDropDownData(): Promise<DropDownDto[]> {
-    return ValidateSchema<DropDownDto>(await prisma.dropDownData.findMany({
+    return await prisma.dropDownData.findMany({
         orderBy: [
             {type: "asc"},
             {score: "desc"},
             {value: "asc"},
         ]
-    }), DropDownSchema, true);
+    });
 }
 
 
-export async function createDropDownData(body: any): Promise<DropDownDto> {
-    let data = ValidateSchema<DropDownDto>(body, DropDownSchema);
+export async function createDropDownData(body: DropDownDto): Promise<DropDownDto> {
     const dropDownData = await prisma.dropDownData.upsert(
         {
-            where: {key: data.key},
-            create: data as any,
-            update: data as any,
+            where: {key: body.key},
+            create: body,
+            update: body,
         });
     return ValidateSchema<DropDownDto>(dropDownData, DropDownSchema);
 }
 
 
 export async function deleteDropDownData(key: string): Promise<DropDownDto> {
-    const rawData = await prisma.dropDownData.delete({where: {key: key}});
-    return ValidateSchema<DropDownDto>(rawData, DropDownSchema);
+    return await prisma.dropDownData.delete({where: {key: key}});
 }

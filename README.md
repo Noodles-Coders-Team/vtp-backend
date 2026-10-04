@@ -54,8 +54,20 @@ ones are there for whatever provisions the database. Startup fails fast if it is
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Starts the server on port 8080 via `tsx` |
-| `npm run build` | Runs `prisma generate` — it does **not** emit JavaScript |
+| `npm run build` | Runs `tsc`. Nothing consumes its output — the app is always run through `tsx` |
 | `npm test` | Runs the ad-hoc scratch script `src/test.ts`, not a test suite |
+
+`npm run build` **currently fails** with six type errors, so treat `tsc` as a linter that
+is not yet clean rather than a gate. Two of them are worth knowing about:
+
+* `src/routes/users.ts` imports `CreateUserSchema` from `@nct/vtp-common`, which no longer
+  exports it. Under `tsx` the import resolves to `undefined` instead of throwing, so the
+  server still starts — but `POST /users/create` passes `undefined` to `validateRequest`
+  and fails at request time. The endpoint is broken.
+* `src/app.ts` — the error handler's four parameters are implicitly `any`.
+
+The rest are a possibly-undefined `oldPost.version_id` in `postService.ts` and the
+same-line noise from the handler above.
 
 ## API docs
 
@@ -109,7 +121,7 @@ layouts are kept in [migration/](migration/).
 ## Database
 
 PostgreSQL through Prisma, using the `@prisma/adapter-pg` driver adapter. The client is
-generated into `src/generated/` (git ignored) and handed out as a singleton by
+generated into `src/generated/prisma/` (git ignored) and handed out as a singleton by
 [src/lib/prisma.ts](src/lib/prisma.ts). The schema lives in
 [prisma/schema.prisma](prisma/schema.prisma); [DB.md](DB.md) holds the same model in DBML
 for [dbdiagram.io](https://dbdiagram.io).
@@ -134,8 +146,8 @@ src/
   routes/            one router per resource, each carrying its @swagger blocks
   services/          Prisma access and business logic
   middleware/        validateRequest, a zod body guard
-  lib/               Prisma singleton and the CSV row types
-  generated/         Prisma client output, git ignored
+  lib/               Prisma singleton (prisma.ts) and the CSV row interfaces (class.ts)
+  generated/prisma/  Prisma client output, git ignored
 ```
 
 Routes stay thin: they read the request, call a service and send the result. The services
@@ -147,6 +159,9 @@ client.
 
 * **No authentication.** Every endpoint is open, and CORS is `origin: '*'`. Do not expose
   this beyond a trusted network as it stands.
-* **No central error handler.** A rejected promise in a handler surfaces as the Express 5
-  default 500; the error shapes documented in Swagger describe the intent, not a
-  guaranteed body.
+* **Error handling is terminal, not per-route.** [src/app.ts](src/app.ts) registers a
+  catch-all 404 (`{ error: 'Not found' }`) and, last, a four-argument error handler that
+  logs the stack and replies `500 { success, message }`. Handlers do not need their own
+  try/catch to avoid a hanging request, but the error shapes documented in Swagger
+  describe the intent rather than a guaranteed body — anything reaching the terminal
+  handler comes back in that one shape.

@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express from 'express';
+import express, {NextFunction} from 'express';
 import usersRouter from './routes/users';
 import gamesRouter from './routes/games';
 import postRouter from './routes/post';
@@ -39,12 +39,13 @@ app.use('/settings', settingRouter);
 app.use((req, res) =>
     res.status(404).json({error: 'Not found'}));
 
-app.use((err, req, res, next) => {
+/*app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack); // Log the error
 
     res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error",
     });
-});
+});*/
+
 export default app;

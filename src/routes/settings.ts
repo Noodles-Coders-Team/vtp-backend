@@ -1,5 +1,13 @@
-import { Router } from "express";
-import { createSetting, deleteSetting, getAllSettings, getSettingByKey, updateSetting } from "../services/settingsService";
+import {Router} from "express";
+import {
+    createSetting,
+    deleteSetting,
+    getAllSettings,
+    getSettingByKey,
+    updateSetting
+} from "../services/settingsService";
+import {validateRequest} from "../middleware/validate";
+import {SettingSchema} from "@nct/vtp-common";
 
 
 /**
@@ -94,7 +102,7 @@ router.get('/:key', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/', async (request, response) => {
+router.post('/', validateRequest(SettingSchema), async (request, response) => {
     const setting = await createSetting(request.body);
     response.json(setting);
 });
@@ -126,7 +134,7 @@ router.post('/', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put('/', async (request, response) => {
+router.put('/', validateRequest(SettingSchema), async (request, response) => {
     const setting = await updateSetting(request.body);
     response.json(setting);
 });

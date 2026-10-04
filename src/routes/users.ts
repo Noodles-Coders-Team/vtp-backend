@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {CreateUserSchema} from "@nct/vtp-common";
+import {UserSchema} from "@nct/vtp-common";
 import {validateRequest} from "../middleware/validate";
 import prisma from "../lib/prisma";
 
@@ -12,6 +12,7 @@ import prisma from "../lib/prisma";
  */
 const router = Router();
 
+//TODO: Create service
 
 /**
  * @swagger
@@ -104,7 +105,7 @@ router.get('/:login', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/create', validateRequest(CreateUserSchema), async (request, response) => {
+router.post('/create', validateRequest(UserSchema), async (request, response) => {
     const user = request.body;
     const createdUser = await prisma.prisma.users.create({
         data: user

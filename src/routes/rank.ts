@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { createRank, deleteRank, getAllRanks, getAllRanksForGame } from "../services/rankService";
+import {validateRequest} from "../middleware/validate";
+import {CreateRankSchema} from "@nct/vtp-common";
 
 
 /**
@@ -117,7 +119,7 @@ router.get('/:gameId', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/', async (request, response) => {
+router.post('/', validateRequest(CreateRankSchema), async (request, response) => {
     const createdRank = await createRank(request.body);
     response.status(201).json(createdRank);
 });

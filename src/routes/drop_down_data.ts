@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { createDropDownData, deleteDropDownData, getAllDropDownData, getGenreDropDown, getTagsDropDown } from "../services/dropDownDataService";
+import {validateRequest} from "../middleware/validate";
+import {DropDownSchema} from "@nct/vtp-common";
 
 /**
  * @swagger
@@ -154,7 +156,7 @@ router.get('/', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/', async (request, response) => {
+router.post('/', validateRequest(DropDownSchema), async (request, response) => {
     const created = await createDropDownData(request.body);
     response.json(created);
 });

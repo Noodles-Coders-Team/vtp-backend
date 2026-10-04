@@ -15,8 +15,6 @@ export async function createGameInfo(body: any): Promise<GameInfoDto> {
     return ValidateSchema<GameInfoDto>(existingInfo, GameInfoSchema);
 }
 
-export async function updateGameInfo(body: any): Promise<GameInfoDto> {
-    const gameInfo = ValidateSchema(body, GameInfoSchema) as GameInfoDto;
-    const updatedInfo = await prisma.gameInformation.update({where: {id: gameInfo.id}, data: gameInfo});
-    return ValidateSchema<GameInfoDto>(updatedInfo, GameInfoSchema);
+export async function updateGameInfo(gameInfo: GameInfoDto): Promise<GameInfoDto> {
+    return await prisma.gameInformation.update({where: {id: gameInfo.id}, data: gameInfo});
 }

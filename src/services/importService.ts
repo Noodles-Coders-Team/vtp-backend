@@ -1,10 +1,16 @@
 import {
     ChannelDataDto,
+    ChannelDataSchema,
     type CreateGameDto,
     type CreateGameInfoDto,
     CreatePostInformationDto,
     CreateRankDto,
-    PostDto
+    CreateRankSchema,
+    GameDto,
+    GameSchema,
+    PostDto,
+    RankDto,
+    ValidateSchema
 } from "@nct/vtp-common";
 import {ChannelDataCsv, GameCsv, TableDataCsv} from "../lib/class";
 import {createGame} from "./gameService";
@@ -13,6 +19,7 @@ import {createChannelData} from "./channelDataService";
 import {createPost, createPostInformation} from "./postService";
 import {createRank} from "./rankService";
 
+//TODO: Re-test imports
 
 export async function importGameCsv(gameCsv: GameCsv[]) {
     for (const game of gameCsv) {
@@ -20,7 +27,7 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             name: game.GameName,
             recorded: false,
         };
-        const createdGame = await createGame(createGameSchema);
+        const createdGame = await createGame(ValidateSchema<GameDto>(createGameSchema, GameSchema));
 
         const createGameInfoSchema: CreateGameInfoDto = {
             game_id: createdGame.id,
@@ -39,17 +46,28 @@ export async function importGameCsv(gameCsv: GameCsv[]) {
             rank: Number(game.Id)
         };
 
-        await createRank(createRankDto);
+        await createRank(ValidateSchema<RankDto>(createRankDto, CreateRankSchema));
     }
 }
 
 
-function convertDate(date: string): string {
-    const info = date.split(".");
+function convertDate(input: string): Date {
+    /*const info = date.split(".");
     if (info.length == 3)
         return info.at(2) + '-' + info.at(1) + '-' + info.at(0) + 'T00:00:00.000Z';
     else
-        return new Date(Date.now()).toISOString();
+        return new Date(Date.now()).toISOString();*/
+    const match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(input.trim());
+    if (!match) throw new Error(`Expected dd.mm.yyyy, got: ${input}`);
+
+    const [, dd, mm, yyyy] = match;
+    const date = new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd)));
+
+    // Date.UTC rolls 31.02 over into March instead of failing — catch that
+    if (date.getUTCDate() !== Number(dd) || date.getUTCMonth() !== Number(mm) - 1) {
+        throw new Error(`Not a real calendar date: ${input}`);
+    }
+    return date;
 }
 
 
@@ -66,7 +84,7 @@ export async function importChannelDataCsv(channel_data: ChannelDataCsv[]) {
             views: Number(data.Views) as number
         };
 
-        await createChannelData(channelDataDto);
+        await createChannelData(ValidateSchema<ChannelDataDto>(channelDataDto, ChannelDataSchema));
     }
 }
 

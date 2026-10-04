@@ -1,12 +1,4 @@
-import {
-    CreateGameInfoDto,
-    CreateGameSchema,
-    GameDto,
-    GameSchema,
-    GameWithInfoDto,
-    GameWithInfoSchema,
-    ValidateSchema
-} from "@nct/vtp-common";
+import {CreateGameInfoDto, GameDto, GameWithInfoDto, GameWithInfoSchema, ValidateSchema} from "@nct/vtp-common";
 import p from "../lib/prisma";
 import {getGenreDropDown, getTagsDropDown} from "./dropDownDataService";
 import {getLatestRankForGame} from "./rankService";
@@ -16,8 +8,7 @@ const prisma = p.prisma;
 
 
 export async function getAllGames(): Promise<GameDto[]> {
-    const allGames = await prisma.game.findMany({orderBy: {name: "asc"}});
-    return ValidateSchema<GameDto>(allGames, GameSchema, true);
+    return await prisma.game.findMany({orderBy: {name: "asc"}});
 }
 
 
@@ -68,16 +59,14 @@ export async function getAllGamesWithInfo(can_record: boolean | null, discussed:
 }
 
 
-export async function getGameById(gameId: string): Promise<GameDto> {
-    const game = await prisma.game.findUnique({
+export async function getGameById(gameId: string): Promise<GameDto | null> {
+    return await prisma.game.findUnique({
         where: {id: gameId}
     });
-    return ValidateSchema<GameDto>(game, GameSchema);
 }
 
-
-export async function createGame(body: any): Promise<GameDto> {
-    const game = ValidateSchema<GameDto>(body, CreateGameSchema);
+//TODO: rewrite to a proper one
+export async function createGame(game: GameDto): Promise<GameDto> {
     const existingGame = await prisma.game.findFirst({
         where: {
             name: game.name
@@ -85,7 +74,7 @@ export async function createGame(body: any): Promise<GameDto> {
     });
 
     if (existingGame !== null) {
-        return ValidateSchema<GameDto>(existingGame, GameSchema);
+        return existingGame;
     }
 
     const createdGame = await prisma.game.create({
@@ -93,23 +82,20 @@ export async function createGame(body: any): Promise<GameDto> {
     });
     await createGameInfo({game_id: createdGame.id} as CreateGameInfoDto);
 
-    return ValidateSchema<GameDto>(createdGame, GameSchema)
+    return createdGame
 }
 
 
-export async function updateGame(id: string, body: any): Promise<GameDto> {
-    const game = ValidateSchema<GameDto>(body, GameSchema);
-    const updatedGame = await prisma.game.update({
+export async function updateGame(id: string, game: GameDto): Promise<GameDto> {
+    return await prisma.game.update({
         where: {id: id},
         data: game
     });
-    return ValidateSchema<GameDto>(updatedGame, GameSchema);
 }
 
 
 export async function deleteGame(id: string): Promise<GameDto> {
-    const deletedGame = await prisma.game.delete({
+    return await prisma.game.delete({
         where: {id: id}
     });
-    return ValidateSchema<GameDto>(deletedGame, GameSchema);
 }

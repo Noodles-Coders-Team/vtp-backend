@@ -4,7 +4,6 @@ import {
     PostDto,
     PostInformationDto,
     PostInformationSchema,
-    PostSchema,
     ValidateSchema
 } from "@nct/vtp-common";
 import p from "../lib/prisma";
@@ -12,15 +11,12 @@ import p from "../lib/prisma";
 const prisma = p.prisma;
 
 
-export async function createPost(postDto: PostDto): Promise<PostDto> {
-    const post = ValidateSchema<PostDto>(postDto, PostSchema);
-
-    const createdPost = await prisma.post.upsert({
+export async function createPost(post: PostDto): Promise<PostDto> {
+    return await prisma.post.upsert({
         where: {id: post.id},
-        create: post as any,
-        update: post as any,
+        create: post,
+        update: post,
     });
-    return ValidateSchema<PostDto>(createdPost, PostSchema);
 }
 
 
@@ -33,7 +29,7 @@ export async function createPostInformation(postDto: CreatePostInformationDto) {
     });
     if (existingPost !== null) {
         const oldPost = ValidateSchema<PostInformationDto>(existingPost, PostInformationSchema);
-        post.version_id = oldPost.version_id + 1;
+        post.version_id = (oldPost.version_id ?? 0) + 1;
     }
     const newPost = await prisma.postInformation.create({data: post as any});
     return ValidateSchema<PostInformationDto>(newPost, PostInformationSchema);

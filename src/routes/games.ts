@@ -1,6 +1,15 @@
-import { Router } from "express";
-import { createGame, deleteGame, getAllGames, getAllGamesWithInfo, getGameById, updateGame } from "../services/gameService";
-import { updateGameInfo } from "../services/gameInfoService";
+import {Request, Router} from "express";
+import {
+    createGame,
+    deleteGame,
+    getAllGames,
+    getAllGamesWithInfo,
+    getGameById,
+    updateGame
+} from "../services/gameService";
+import {updateGameInfo} from "../services/gameInfoService";
+import {validateRequest} from "../middleware/validate";
+import {CreateGameSchema, GameInfoSchema, GameSchema} from "@nct/vtp-common";
 
 /**
  * @swagger
@@ -83,7 +92,7 @@ router.get('/', async (request, response) => {
  *         $ref: '#/components/responses/ServerError'
  */
 router.post('/with-info', async (request, response) => {
-    const { can_record, discussed } = request.body;
+    const {can_record, discussed} = request.body;
     const allGamesWithInfo = await getAllGamesWithInfo(can_record, discussed);
     response.json(allGamesWithInfo);
 });
@@ -146,7 +155,7 @@ router.get('/:id', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/create', async (request, response) => {
+router.post('/create', validateRequest(CreateGameSchema), async (request, response) => {
     const createdGame = await createGame(request.body);
     response.status(201).json(createdGame);
 });
@@ -181,7 +190,7 @@ router.post('/create', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put('/info', async (request, response) => {
+router.put('/info', validateRequest(GameInfoSchema), async (request, response) => {
     const updatedGameInfo = await updateGameInfo(request.body);
     response.status(200).json(updatedGameInfo);
 });
@@ -225,7 +234,7 @@ router.put('/info', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put('/:id', async (request, response) => {
+router.put('/:id', validateRequest(GameSchema), async (request: Request<{ id: string }>, response) => {
     const updatedGame = await updateGame(request.params.id, request.body);
     response.status(200).json(updatedGame);
 });
@@ -262,5 +271,6 @@ router.delete('/:id', async (request, response) => {
     const deletedGame = await deleteGame(request.params.id);
     response.status(200).json(deletedGame);
 });
+
 
 export default router;
