@@ -1,4 +1,4 @@
-import {CreateGameInfoDto, CreateGameInfoSchema, GameInfoDto, GameInfoSchema, ValidateSchema} from "@nct/vtp-common";
+import {CreateGameInfoDto, CreateGameInfoSchema, GameInfoDto, ValidateSchema} from "@nct/vtp-common";
 import p from "../lib/prisma";
 
 const prisma = p.prisma;
@@ -7,12 +7,11 @@ const prisma = p.prisma;
 export async function createGameInfo(body: any): Promise<GameInfoDto> {
     const gameInfo = ValidateSchema<CreateGameInfoDto>(body, CreateGameInfoSchema);
 
-    const existingInfo = await prisma.gameInformation.upsert({
+    return await prisma.gameInformation.upsert({
         where: {game_id: gameInfo.game_id},
-        create: gameInfo as any,
-        update: gameInfo as any,
+        create: gameInfo,
+        update: gameInfo,
     });
-    return ValidateSchema<GameInfoDto>(existingInfo, GameInfoSchema);
 }
 
 export async function updateGameInfo(gameInfo: GameInfoDto): Promise<GameInfoDto> {

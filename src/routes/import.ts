@@ -1,4 +1,4 @@
-import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/class";
+import { ChannelDataCsv, GameCsv, TableDataCsv } from "../lib/Interfaces";
 import { Router } from "express";
 import multer from "multer";
 import csv from "csv-parser";

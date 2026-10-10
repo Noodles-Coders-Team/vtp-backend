@@ -3,6 +3,18 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
+Table steam_app{
+  id int [primary key]
+  is_data_imported bool
+  name string
+  categories string[]
+  genres string[]
+  tags string[]
+  metacritic_score int
+  release_date date
+  review_count Int
+}
+
 Table game{
   id guid [primary key]
   name varchar

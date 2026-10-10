@@ -10,6 +10,20 @@ datasource db {
   provider = "postgresql"
 }
 
+model SteamApp {
+  id               Int      @id
+  is_data_imported Boolean
+  name             String?
+  categories       String[]
+  genres           String[]
+  tags             String[]
+  metacritic_score Int?
+  release_date     DateTime?
+  review_count     Int?
+
+  @@map("steam_app")
+}
+
 model Game {
   id           String    @id @default(uuid())
   name         String
@@ -150,8 +164,8 @@ model DropDownData {
 }
 
 model Settings {
-  key String @id
-  value String
+  key     String @id
+  value   String
   display String
 
   @@map("settings")

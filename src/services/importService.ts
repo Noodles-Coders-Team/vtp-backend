@@ -12,7 +12,7 @@ import {
     RankDto,
     ValidateSchema
 } from "@nct/vtp-common";
-import {ChannelDataCsv, GameCsv, TableDataCsv} from "../lib/class";
+import {ChannelDataCsv, GameCsv, TableDataCsv} from "../lib/Interfaces";
 import {createGame} from "./gameService";
 import {createGameInfo} from "./gameInfoService";
 import {createChannelData} from "./channelDataService";

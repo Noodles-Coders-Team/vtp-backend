@@ -20,6 +20,7 @@ export interface ChannelDataCsv {
     Views: number
 }
 
+
 export interface TableDataCsv {
     Content: string;
     'Video title': string;
@@ -67,4 +68,50 @@ export interface TableDataCsv {
     'Cards shown': number;
     'Clicks per card shown (%)': number;
     'Card teaser clicks': number;
+}
+
+
+export interface AppItem {
+    appid: number;
+    name: string;
+}
+
+
+export interface AppListResponse {
+    response: {
+        apps: AppItem[];
+    };
+}
+
+
+export interface RawAppData {
+    name: string;
+    metacritic?: { score: number };
+    categories?: { id: number; description: string }[];
+    genres?: { id: string; description: string }[];
+    recommendations?: { total: number };
+    release_date?: { date: string; coming_soon?: boolean };
+}
+
+
+export type SteamAppDetailsResponse = Record<
+    string,
+    { success: boolean; data?: RawAppData }
+>;
+
+
+export interface SteamAppDetails {
+    appId: number;
+    name: string;
+    metacritic: number | null;
+    recommendations: number | null;
+    categories: string[];
+    genres: string[];
+    releaseDate: Date | null;
+}
+
+
+export interface SteamSpyResponse {
+    name: string;
+    tags: Record<string, number>;
 }
