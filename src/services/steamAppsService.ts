@@ -41,6 +41,11 @@ export async function triggerAllSteamAppsScheduler() {
 }
 
 
+export function getAllSteamAppsSchedulerStatus() {
+    return !!allAppsJob;
+}
+
+
 export async function triggerAllSteamAppsDataScheduler() {
     if (!allAppsDataJob) {
         console.log('Scheduling AllSteamAppsData job!');
@@ -64,6 +69,11 @@ export async function triggerAllSteamAppsDataScheduler() {
         allAppsDataJob.cancel(false);
         allAppsDataJob = null;
     }
+}
+
+
+export function getAllSteamAppsDataScheduler() {
+    return !!allAppsDataJob;
 }
 
 
