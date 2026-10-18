@@ -24,8 +24,13 @@ router.get('/trigger-all-data-scheduler', async (request, response) => {
 
 
 router.get('/imported-apps', async (request, response) => {
-    const apps = await getAllImportedApps();
+    let page = request.query.page;
+    if (page === undefined || page === "")
+        page = "1";
+
+    const apps = await getAllImportedApps(Number(page));
     response.json(apps);
 });
+
 
 export default router;

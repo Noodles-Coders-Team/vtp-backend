@@ -186,10 +186,12 @@ async function getSteamspyAppTags(appId: string): Promise<string[]> {
 }
 
 
-export async function getAllImportedApps(): Promise<SteamAppDto[]> {
+export async function getAllImportedApps(page: number): Promise<SteamAppDto[]> {
+    const pageLimit = 50;
     return await prisma.steamApp.findMany({
         where: {is_data_imported: true},
-        orderBy: {id: "desc"},
-        take: 50
+        orderBy: {id: "asc"},
+        take: pageLimit,
+        skip: pageLimit * (page - 1)
     });
 }
