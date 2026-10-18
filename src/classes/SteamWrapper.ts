@@ -1,3 +1,4 @@
+import {load} from "cheerio";
 import {SteamRequestLimitExceeded} from "./Errors";
 import {AppListResponse, SteamAppDetails, SteamAppDetailsResponse, SteamSpyResponse} from "../lib/Interfaces";
 
@@ -55,6 +56,33 @@ class SteamWrapper {
         } else {
             console.warn(`SteamApi unknown response. Message: ${await response.text()}`);
         }
+    }
+
+
+    public async getAppTags(appId: string): Promise<string[]> {
+        const URL = `https://store.steampowered.com/app/${appId}?cc=us&l=english`;
+        const response = await fetch(URL, {
+            headers: {'Cookie': 'birthtime=283993201'},
+            redirect: 'manual',
+        });
+
+        if (response.status == 429) {
+            throw new SteamRequestLimitExceeded('Exceeded Steam API limits');
+        } else if (response.status == 301 || response.status == 302) {
+            console.warn(`Steam store page for app ${appId} is gated or delisted (redirects to ${response.headers.get('location')})`);
+            return [];
+        } else if (!response.ok) {
+            console.warn(`SteamApi unknown response. Message: ${await response.text()}`);
+            return [];
+        }
+
+        const cheerio = load(await response.text());
+
+        return cheerio('a.app_tag')
+            .not('.add_button')
+            .map((_, el) => cheerio(el).text().trim())
+            .get()
+            .filter(tag => tag !== '');
     }
 
 

@@ -1,79 +1,79 @@
 import p from "../lib/prisma";
 import {SteamAppDto} from "@nct/vtp-common";
 import {SteamRequestLimitExceeded} from "../classes/Errors";
-import schedule, {Job} from 'node-schedule';
+import schedule, {Job, RecurrenceRule} from 'node-schedule';
 import {SteamSpyResponse} from "../lib/Interfaces";
 import SteamWrapper from "../classes/SteamWrapper";
 
 const prisma = p.prisma;
 
 const steam = new SteamWrapper();
-let allAppsJob: Job | null;
-let allAppsDataJob: Job | null;
+const LIMIT_APPS_PER_BATCH = 50;
 
+const jobs: Record<string, Job | null> = {};
 
 // https://github.com/node-schedule/node-schedule
 // https://stackoverflow.com/questions/48432356/node-js-express-how-to-schedule-task
 
+
 export async function triggerAllSteamAppsScheduler() {
-    if (!allAppsJob) {
-        console.log('Scheduling AllSteamApps job!');
-        const rule = new schedule.RecurrenceRule();
-        rule.second = 30;
-        let ruleRunCount = 0;
-        allAppsJob = schedule.scheduleJob(rule, async function () {
-            ruleRunCount++;
-            console.log(`Starting job: AllSteamApps. N: ${ruleRunCount}`);
-            try {
-                await getSteamAppsAndSaveThem();
-            } catch (e) {
-                console.error('Error while running getSteamAppsAndSaveThem!');
-                console.error((e as Error).message);
-            } finally {
-                console.log('Job AllSteamApps finished.');
-            }
-        });
-    } else {
-        console.log('Cancelling AllSteamApps job!');
-        allAppsJob.cancel(false);
-        allAppsJob = null;
-    }
-}
-
-
-export function getAllSteamAppsSchedulerStatus() {
-    return !!allAppsJob;
+    const rule = new schedule.RecurrenceRule();
+    rule.second = 30;
+    jobScheduler(rule, 'AllSteamApps', getSteamAppsAndSaveThem);
 }
 
 
 export async function triggerAllSteamAppsDataScheduler() {
-    if (!allAppsDataJob) {
-        console.log('Scheduling AllSteamAppsData job!');
-        const rule = new schedule.RecurrenceRule();
-        rule.second = 59;
-        let ruleRunCount = 0;
-        allAppsDataJob = schedule.scheduleJob(rule, async function () {
-            ruleRunCount++;
-            console.log(`Starting job: AllSteamAppsData. N: ${ruleRunCount}`);
-            try {
-                await getSteamAppsDataAndSaveThem();
-            } catch (e) {
-                console.error('Error while running getSteamAppsDataAndSaveThem!');
-                console.error((e as Error).message);
-            } finally {
-                console.log('Job AllSteamAppsData finished.');
-            }
-        });
-    } else {
-        console.log('Cancelling AllSteamAppsData job!');
-        allAppsDataJob.cancel(false);
-        allAppsDataJob = null;
-    }
+    const rule = new schedule.RecurrenceRule();
+    rule.second = 59;
+    jobScheduler(rule, 'AllSteamAppsData', getSteamAppsDataAndSaveThem);
+}
+
+
+export async function triggerAllSteamAppsTagsScheduler() {
+    const rule = new schedule.RecurrenceRule();
+    rule.second = 10;
+    jobScheduler(rule, 'AllSteamAppsTags', getSteamAppsTagsAndSaveThem);
+}
+
+
+export function getAllSteamAppsSchedulerStatus() {
+    return !!jobs['AllSteamApps'];
 }
 
 
 export function getAllSteamAppsDataScheduler() {
-    return !!allAppsDataJob;
+    return !!jobs['AllSteamAppsData'];
+}
+
+
+export function getAllSteamAppsTagsScheduler() {
+    return !!jobs['AllSteamAppsTags'];
+}
+
+
+async function jobScheduler(rule: RecurrenceRule, name: string, jobFunction: () => Promise<void>) {
+    const job = jobs[name];
+    if (!job) {
+        console.log(`Scheduling ${name} job!`);
+        let ruleRunCount = 0;
+        jobs[name] = schedule.scheduleJob(rule, async function () {
+            ruleRunCount++;
+            console.log(`Starting job: ${name}. N: ${ruleRunCount}`);
+            try {
+                await jobFunction();
+            } catch (e) {
+                console.error(`Error while running ${jobFunction.name}!`);
+                console.error((e as Error).message);
+            } finally {
+                console.log(`Job ${name} finished.`);
+            }
+        });
+    } else {
+        console.log(`Cancelling ${name} job!`);
+        job.cancel(false);
+        jobs[name] = null;
+    }
 }
 
 
@@ -95,14 +95,13 @@ export async function getSteamAppsAndSaveThem() {
         if (error instanceof SteamRequestLimitExceeded) {
             console.warn('Steam API limit exceeded');
         } else
-            console.error(`Error getSteamAppDataAndSaveThem: ${error}`);
+            console.error(`Error getSteamAppsAndSaveThem: ${error}`);
     }
 }
 
 
-export async function getSteamAppsDataAndSaveThem(): Promise<void> {
-    const limit = 100;
-    const appIds = await getPendingImportSteamAppIds(limit);
+async function getSteamAppsDataAndSaveThem(): Promise<void> {
+    const appIds = await getPendingImportSteamAppIds(LIMIT_APPS_PER_BATCH);
     if (!appIds)
         return;
 
@@ -117,16 +116,52 @@ export async function getSteamAppsDataAndSaveThem(): Promise<void> {
         if (error instanceof SteamRequestLimitExceeded) {
             console.warn('Steam API limit exceeded');
         } else
-            console.error(`Error getSteamAppDataAndSaveThem: ${error}`);
+            console.error(`Error getSteamAppDataAndSaveIt: ${error}`);
     } finally {
         console.log(`Updated ${numberUpdated} apps`);
     }
 }
 
 
+async function getSteamAppsTagsAndSaveThem() {
+    const appIds = await getImportedAppsWithoutTags(LIMIT_APPS_PER_BATCH);
+    if (!appIds)
+        return;
+
+    let numberUpdated = 0;
+    try {
+        for (const appId of appIds) {
+            await getSteamAppsTagAndSaveIt(appId);
+            numberUpdated++;
+            await new Promise(f => setTimeout(f, 500));
+        }
+    } catch (error) {
+        if (error instanceof SteamRequestLimitExceeded) {
+            console.warn('Steam API limit exceeded');
+        } else
+            console.error(`Error getSteamAppsTagAndSaveIt: ${error}`);
+    } finally {
+        console.log(`Updated ${numberUpdated} apps`);
+    }
+}
+
+
+async function getSteamAppsTagAndSaveIt(appId: string) {
+    // SteamSpy first: it has no age gate, so it covers the adult-only titles the store scrape cannot reach
+    let tags = await getSteamspyAppTags(appId);
+    if (tags.length === 0) {
+        tags = await steam.getAppTags(appId);
+    }
+    await prisma.steamApp.update({where: {id: Number(appId)}, data: {tags: tags}});
+}
+
+
 async function getSteamAppDataAndSaveIt(appId: string): Promise<void> {
     const steamAppDetail = await steam.getAppInformation(appId);
-    const tags = await getSteamspyAppTags(appId);
+    let tags = await getSteamspyAppTags(appId);
+    if (tags.length === 0) {
+        tags = await steam.getAppTags(appId);
+    }
     let steamApp: SteamAppDto;
     if (steamAppDetail === undefined) {
         steamApp = {
@@ -196,7 +231,20 @@ async function getSteamspyAppTags(appId: string): Promise<string[]> {
 }
 
 
-export async function getAllImportedApps(page: number): Promise<SteamAppDto[]> {
+async function getImportedAppsWithoutTags(limit: number): Promise<string[]> {
+    const apps = await prisma.steamApp.findMany({
+        where: {
+            is_data_imported: true,
+            tags: {isEmpty: true},
+        },
+        orderBy: {id: "desc"},
+        take: limit,
+    });
+    return apps.map(app => app.id.toString());
+}
+
+
+export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
     const pageLimit = 50;
     return await prisma.steamApp.findMany({
         where: {is_data_imported: true},

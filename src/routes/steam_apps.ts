@@ -1,8 +1,8 @@
 import {Router} from "express";
 import {
-    getAllImportedApps, getAllSteamAppsDataScheduler, getAllSteamAppsSchedulerStatus,
+    getImportedApps, getAllSteamAppsDataScheduler, getAllSteamAppsSchedulerStatus, getAllSteamAppsTagsScheduler,
     triggerAllSteamAppsDataScheduler,
-    triggerAllSteamAppsScheduler
+    triggerAllSteamAppsScheduler, triggerAllSteamAppsTagsScheduler
 } from "../services/steamAppsService";
 
 
@@ -18,7 +18,7 @@ router.get('/trigger-all-games-scheduler', async (request, response) => {
 
 router.get('/all-games-scheduler-status', async (request, response) => {
     const status = getAllSteamAppsSchedulerStatus();
-    response.status(202).json({isActive: status});
+    response.status(200).json({isActive: status});
 });
 
 
@@ -31,7 +31,20 @@ router.get('/trigger-all-data-scheduler', async (request, response) => {
 
 router.get('/all-data-scheduler-status', async (request, response) => {
     const status = getAllSteamAppsDataScheduler();
-    response.status(202).json({isActive: status});
+    response.status(200).json({isActive: status});
+});
+
+
+router.get('/trigger-all-tags-scheduler', async (request, response) => {
+    triggerAllSteamAppsTagsScheduler();
+    response.status(202);
+    response.send();
+});
+
+
+router.get('/all-tags-scheduler-status', async (request, response) => {
+    const status = getAllSteamAppsTagsScheduler();
+    response.status(200).json({isActive: status});
 });
 
 
@@ -40,7 +53,7 @@ router.get('/imported-apps', async (request, response) => {
     if (page === undefined || page === "")
         page = "1";
 
-    const apps = await getAllImportedApps(Number(page));
+    const apps = await getImportedApps(Number(page));
     response.json(apps);
 });
 
