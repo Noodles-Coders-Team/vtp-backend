@@ -29,6 +29,8 @@ export async function triggerAllSteamAppsScheduler() {
             } catch (e) {
                 console.error('Error while running getSteamAppsAndSaveThem!');
                 console.error((e as Error).message);
+            } finally {
+                console.log('Job AllSteamApps finished.');
             }
         });
     } else {
@@ -53,6 +55,8 @@ export async function triggerAllSteamAppsDataScheduler() {
             } catch (e) {
                 console.error('Error while running getSteamAppsDataAndSaveThem!');
                 console.error((e as Error).message);
+            } finally {
+                console.log('Job AllSteamAppsData finished.');
             }
         });
     } else {
@@ -177,8 +181,15 @@ async function getSteamspyAppTags(appId: string): Promise<string[]> {
         console.log('SteamSpy responded NOT OK');
         return [];
     }
-    console.log('SteamSpy responded OK');
     const body: SteamSpyResponse = await spyResponse.json();
-    console.log(JSON.stringify(body.tags));
     return Object.keys(body.tags);
+}
+
+
+export async function getAllImportedApps(): Promise<SteamAppDto[]> {
+    return await prisma.steamApp.findMany({
+        where: {is_data_imported: true},
+        orderBy: {id: "desc"},
+        take: 50
+    });
 }

@@ -1,5 +1,9 @@
 import {Router} from "express";
-import {triggerAllSteamAppsDataScheduler, triggerAllSteamAppsScheduler} from "../services/steamAppsService";
+import {
+    getAllImportedApps,
+    triggerAllSteamAppsDataScheduler,
+    triggerAllSteamAppsScheduler
+} from "../services/steamAppsService";
 
 
 const router = Router();
@@ -11,11 +15,17 @@ router.get('/trigger-all-games-scheduler', async (request, response) => {
     response.send();
 });
 
+
 router.get('/trigger-all-data-scheduler', async (request, response) => {
     triggerAllSteamAppsDataScheduler();
     response.status(202);
     response.send();
 });
 
+
+router.get('/imported-apps', async (request, response) => {
+    const apps = await getAllImportedApps();
+    response.json(apps);
+});
 
 export default router;
