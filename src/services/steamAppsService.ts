@@ -152,7 +152,7 @@ async function getSteamAppsTagAndSaveIt(appId: string) {
     if (tags.length === 0) {
         tags = await steam.getAppTags(appId);
     }
-    await prisma.steamApp.update({where: {id: Number(appId)}, data: {tags: tags}});
+    await prisma.steamApp.update({where: {id: Number(appId)}, data: {tags: tags, is_tags_imported: true}});
 }
 
 
@@ -162,17 +162,24 @@ async function getSteamAppDataAndSaveIt(appId: string): Promise<void> {
     if (tags.length === 0) {
         tags = await steam.getAppTags(appId);
     }
+    
+    let isTags: boolean = true;
+    if (tags.length === 0)
+        isTags = false;
+
     let steamApp: SteamAppDto;
     if (steamAppDetail === undefined) {
         steamApp = {
             id: Number(appId),
             is_data_imported: true,
-            tags: tags,
+            is_tags_imported: isTags,
+            tags: tags
         };
     } else {
         steamApp = {
             id: Number(appId),
             is_data_imported: true,
+            is_tags_imported: isTags,
             categories: steamAppDetail.categories,
             genres: steamAppDetail.genres,
             tags: tags,
@@ -236,6 +243,7 @@ async function getImportedAppsWithoutTags(limit: number): Promise<string[]> {
         where: {
             is_data_imported: true,
             tags: {isEmpty: true},
+            is_tags_imported: false
         },
         orderBy: {id: "desc"},
         take: limit,

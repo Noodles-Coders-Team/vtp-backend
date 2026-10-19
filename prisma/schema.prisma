@@ -12,7 +12,8 @@ datasource db {
 
 model SteamApp {
   id               Int      @id
-  is_data_imported Boolean
+  is_data_imported Boolean @default(false)
+  is_tags_imported Boolean @default(false)
   name             String?
   categories       String[]
   genres           String[]
