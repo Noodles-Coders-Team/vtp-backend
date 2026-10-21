@@ -168,6 +168,7 @@ model Settings {
   key     String @id
   value   String
   display String
+  is_system Boolean
 
   @@map("settings")
 }

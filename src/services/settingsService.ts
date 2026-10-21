@@ -24,6 +24,11 @@ export async function updateSetting(setting: SettingDto): Promise<SettingDto> {
 }
 
 
+export async function createDefaultSetting(setting: SettingDto): Promise<void> {
+    await prisma.settings.upsert({where: {key: setting.key}, create: setting, update: {}});
+}
+
+
 export async function deleteSetting(key: string): Promise<SettingDto> {
     return await prisma.settings.delete({where: {key: key}});
 }

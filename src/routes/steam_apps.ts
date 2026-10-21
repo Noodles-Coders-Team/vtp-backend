@@ -10,9 +10,10 @@ const router = Router();
 
 
 router.get('/trigger-all-games-scheduler', async (request, response) => {
-    triggerAllSteamAppsScheduler();
+    await triggerAllSteamAppsScheduler();
+    const status = getAllSteamAppsSchedulerStatus();
     response.status(202);
-    response.send();
+    response.json({isActive: status})
 });
 
 
@@ -23,9 +24,10 @@ router.get('/all-games-scheduler-status', async (request, response) => {
 
 
 router.get('/trigger-all-data-scheduler', async (request, response) => {
-    triggerAllSteamAppsDataScheduler();
+    await triggerAllSteamAppsDataScheduler();
+    const status = getAllSteamAppsDataScheduler();
     response.status(202);
-    response.send();
+    response.json({isActive: status})
 });
 
 
@@ -36,9 +38,10 @@ router.get('/all-data-scheduler-status', async (request, response) => {
 
 
 router.get('/trigger-all-tags-scheduler', async (request, response) => {
-    triggerAllSteamAppsTagsScheduler();
+    await triggerAllSteamAppsTagsScheduler();
+    const status = getAllSteamAppsTagsScheduler();
     response.status(202);
-    response.send();
+    response.json({isActive: status})
 });
 
 

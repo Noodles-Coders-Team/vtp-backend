@@ -32,7 +32,7 @@ export async function triggerAllSteamAppsDataScheduler() {
 
 export async function triggerAllSteamAppsTagsScheduler() {
     const rule = new schedule.RecurrenceRule();
-    rule.second = 10;
+    rule.second = 5;
     jobScheduler(rule, 'AllSteamAppsTags', getSteamAppsTagsAndSaveThem);
 }
 
@@ -255,7 +255,7 @@ async function getImportedAppsWithoutTags(limit: number): Promise<string[]> {
 export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
     const pageLimit = 50;
     return await prisma.steamApp.findMany({
-        where: {is_data_imported: true},
+        where: {is_data_imported: true, tags: {isEmpty: false}},
         orderBy: {id: "asc"},
         take: pageLimit,
         skip: pageLimit * (page - 1)
