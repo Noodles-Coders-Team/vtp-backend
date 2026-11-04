@@ -1,16 +1,19 @@
 import p from "../lib/prisma";
-import {SteamAppDto} from "@nct/vtp-common";
+import {SteamAppDto, type UserSteamAppRefDataConfigDto} from "@nct/vtp-common";
 import {SteamRequestLimitExceeded} from "../classes/Errors";
-import schedule, {Job, RecurrenceRule} from 'node-schedule';
+import schedule from 'node-schedule';
 import {SteamSpyResponse} from "../lib/Interfaces";
 import SteamWrapper from "../classes/SteamWrapper";
+import {isJobRunning, toggleJobRunner} from "./jobsService";
+import {SteamAppReferenceDataType} from "../generated/prisma/enums";
 
 const prisma = p.prisma;
 
+// getFilteredApps returns the steam_app row plus the computed tag score
+export type FilteredSteamAppDto = SteamAppDto & { rating: number };
+
 const steam = new SteamWrapper();
 const LIMIT_APPS_PER_BATCH = 50;
-
-const jobs: Record<string, Job | null> = {};
 
 // https://github.com/node-schedule/node-schedule
 // https://stackoverflow.com/questions/48432356/node-js-express-how-to-schedule-task
@@ -18,62 +21,39 @@ const jobs: Record<string, Job | null> = {};
 
 export async function triggerAllSteamAppsScheduler() {
     const rule = new schedule.RecurrenceRule();
-    rule.second = 30;
-    jobScheduler(rule, 'AllSteamApps', getSteamAppsAndSaveThem);
+    rule.second = new schedule.Range(0, 59, 30);
+    toggleJobRunner(rule, 'AllSteamApps', getSteamAppsAndSaveThem);
 }
 
 
 export async function triggerAllSteamAppsDataScheduler() {
     const rule = new schedule.RecurrenceRule();
-    rule.second = 59;
-    jobScheduler(rule, 'AllSteamAppsData', getSteamAppsDataAndSaveThem);
+    //rule.second = new schedule.Range(0, 59, 15);
+    rule.minute = new schedule.Range(0, 59, 15);
+    toggleJobRunner(rule, 'AllSteamAppsData', getSteamAppsDataAndSaveThem);
 }
 
 
 export async function triggerAllSteamAppsTagsScheduler() {
     const rule = new schedule.RecurrenceRule();
-    rule.second = 5;
-    jobScheduler(rule, 'AllSteamAppsTags', getSteamAppsTagsAndSaveThem);
+    //rule.minute = new schedule.Range(0, 59, 2);
+    rule.minute = new schedule.Range(0, 59, 45);
+    toggleJobRunner(rule, 'AllSteamAppsTags', getSteamAppsTagsAndSaveThem);
 }
 
 
 export function getAllSteamAppsSchedulerStatus() {
-    return !!jobs['AllSteamApps'];
+    return isJobRunning('AllSteamApps');
 }
 
 
 export function getAllSteamAppsDataScheduler() {
-    return !!jobs['AllSteamAppsData'];
+    return isJobRunning('AllSteamAppsData');
 }
 
 
 export function getAllSteamAppsTagsScheduler() {
-    return !!jobs['AllSteamAppsTags'];
-}
-
-
-async function jobScheduler(rule: RecurrenceRule, name: string, jobFunction: () => Promise<void>) {
-    const job = jobs[name];
-    if (!job) {
-        console.log(`Scheduling ${name} job!`);
-        let ruleRunCount = 0;
-        jobs[name] = schedule.scheduleJob(rule, async function () {
-            ruleRunCount++;
-            console.log(`Starting job: ${name}. N: ${ruleRunCount}`);
-            try {
-                await jobFunction();
-            } catch (e) {
-                console.error(`Error while running ${jobFunction.name}!`);
-                console.error((e as Error).message);
-            } finally {
-                console.log(`Job ${name} finished.`);
-            }
-        });
-    } else {
-        console.log(`Cancelling ${name} job!`);
-        job.cancel(false);
-        jobs[name] = null;
-    }
+    return isJobRunning('AllSteamAppsTags');
 }
 
 
@@ -162,7 +142,7 @@ async function getSteamAppDataAndSaveIt(appId: string): Promise<void> {
     if (tags.length === 0) {
         tags = await steam.getAppTags(appId);
     }
-    
+
     let isTags: boolean = true;
     if (tags.length === 0)
         isTags = false;
@@ -260,4 +240,94 @@ export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
         take: pageLimit,
         skip: pageLimit * (page - 1)
     });
+}
+
+
+// https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries
+export async function getFilteredApps(tags: string, tag_weights: string): Promise<FilteredSteamAppDto[]> {
+    const tagList = parseTags(tags);
+    const weightList = parseTagWeights(tag_weights);
+    if (tagList.length === 0 || tagList.length !== weightList.length)
+        return [];
+
+    const limit = 25;
+
+    return await prisma.$queryRaw<FilteredSteamAppDto[]>`
+        SELECT a.*, COALESCE(r.rating, 0) AS rating
+        FROM steam_app a
+                 LEFT JOIN LATERAL (
+            SELECT SUM(w.weight)::int AS rating
+            FROM unnest(${tagList}::text[], ${weightList}::int[]) AS w(tag, weight)
+            WHERE w.tag = ANY (a.tags)
+            ) r ON true
+        WHERE a.release_date IS NOT NULL
+        ORDER BY rating DESC
+        LIMIT ${limit};`;
+}
+
+
+// Accepts both "Tennis, MOBA" and the quoted "'Tennis', 'MOBA'" form shown in the UI placeholder
+function parseTags(tags: string | undefined): string[] {
+    return (tags ?? '').split(',')
+        .map(tag => tag.trim().replace(/^['"]|['"]$/g, '').trim())
+        .filter(tag => tag.length > 0);
+}
+
+
+function parseTagWeights(tag_weights: string | undefined): number[] {
+    return (tag_weights ?? '').split(',')
+        .map(weight => weight.trim())
+        .filter(weight => weight.length > 0)
+        .map(weight => Number(weight))
+        // a non-numeric weight drops out here, tripping the length check against the tags
+        .filter(weight => Number.isFinite(weight));
+}
+
+
+export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[]): Promise<FilteredSteamAppDto[]> {
+    const tagsVal = config.filter(ref => ref.type = SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
+    const tagsWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.TAG).map(ref => ref.score);
+
+    const categoryVal = config.filter(ref => ref.type = SteamAppReferenceDataType.CATEGORY).map(ref => ref.value.toString());
+    const categoryWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.CATEGORY).map(ref => ref.score);
+
+    const genresVal = config.filter(ref => ref.type = SteamAppReferenceDataType.GENRE).map(ref => ref.value.toString());
+    const genresWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.GENRE).map(ref => ref.score);
+
+    const limit = 25;
+
+    return await prisma.$queryRaw<FilteredSteamAppDto[]>`
+        select a.*,
+               coalesce(r_categories.rating, 0)
+                   + coalesce(r_genres.rating, 0)
+                   + coalesce(r_tags.rating, 0) as rating
+        from steam_app a
+                 left join lateral (
+            select sum(w.weight)::int as rating
+            from unnest(
+                         ${tagsVal}::text[],
+                         ${tagsWeight}::int[])
+                     as w(tag, weight)
+            where w.tag = any (a.tags)
+            ) r_tags on true
+                 left join lateral (
+            select sum(w.weight)::int AS rating
+            from unnest(
+                         ${categoryVal}::text[],
+                         ${categoryWeight}::int[])
+                     as w(category, weight)
+            where w.category = any (a.categories)
+            ) r_categories on true
+                 left join lateral (
+            select sum(w.weight)::int as rating
+            from unnest(
+                         ${genresVal}::text[],
+                         ${genresWeight}::int[])
+                     as w(genre, weight)
+            where w.genre = any (a.genres)
+            ) r_genres on true
+        where a.release_date is not null
+          and a.release_date < NOW()
+        order by rating desc
+        limit ${limit};`;
 }

@@ -1,15 +1,9 @@
 import cors from 'cors';
 import express, {NextFunction} from 'express';
 import usersRouter from './routes/users';
-import gamesRouter from './routes/games';
-import postRouter from './routes/post';
-import postInformationRouter from './routes/post_information';
-import chanelDataRouter from './routes/channel_data';
-import dropDownDataRouter from './routes/drop_down_data';
-import rankRouter from './routes/rank';
-import importRouter from './routes/import';
-import settingRouter from './routes/settings';
 import steamAppRouter from './routes/steam_apps';
+import steamAppRefDataRouter from './routes/steam_app_reference_data';
+import userGameScoreRouter from './routes/user_game_score';
 import swaggerUi from 'swagger-ui-express';
 import {swaggerSpec} from './config/swagger';
 
@@ -25,18 +19,12 @@ app.use(cors({
 }));
 
 
-app.use('/users', usersRouter);
-app.use('/games', gamesRouter);
-app.use('/post', postRouter);
-app.use('/post/information', postInformationRouter);
-app.use('/rank', rankRouter);
-app.use('/channel-data', chanelDataRouter);
-app.use('/import', importRouter);
-app.use('/drop-down-data', dropDownDataRouter);
-app.use('/settings', settingRouter);
-app.use('/steam-apps', steamAppRouter);
 // Another way for adding validation
 //app.use('/users', validate(CreateUserSchema), usersRouter);
+app.use('/users', usersRouter);
+app.use('/steam-apps', steamAppRouter);
+app.use('/steam-app-ref-data', steamAppRefDataRouter);
+app.use('/user-game-score', userGameScoreRouter);
 
 app.use((req, res) =>
     res.status(404).json({error: 'Not found'}));

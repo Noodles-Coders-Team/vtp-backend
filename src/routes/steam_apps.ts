@@ -1,9 +1,16 @@
 import {Router} from "express";
 import {
-    getImportedApps, getAllSteamAppsDataScheduler, getAllSteamAppsSchedulerStatus, getAllSteamAppsTagsScheduler,
+    getAllSteamAppsDataScheduler,
+    getAllSteamAppsSchedulerStatus,
+    getAllSteamAppsTagsScheduler,
+    getFilteredApps,
+    getFilteredAppsWithUserConfig,
+    getImportedApps,
     triggerAllSteamAppsDataScheduler,
-    triggerAllSteamAppsScheduler, triggerAllSteamAppsTagsScheduler
+    triggerAllSteamAppsScheduler,
+    triggerAllSteamAppsTagsScheduler
 } from "../services/steamAppsService";
+import {UserSteamAppRefDataConfigDto, UserSteamAppRefDataConfigSchema, ValidateSchema} from "@nct/vtp-common";
 
 
 const router = Router();
@@ -57,6 +64,24 @@ router.get('/imported-apps', async (request, response) => {
         page = "1";
 
     const apps = await getImportedApps(Number(page));
+    response.json(apps);
+});
+
+
+router.get('/apps-filtered', async (request, response) => {
+    let tags: string = request.query.tags as string;
+    let tag_weights: string = request.query.tag_weights as string;
+
+    const apps = await getFilteredApps(tags, tag_weights);
+    response.json(apps);
+});
+
+
+router.post('/apps-filtered-with-user-config', async (request, response) => {
+    const refData: UserSteamAppRefDataConfigDto[] = request.body;
+    console.log(refData);
+    const refDataDto = ValidateSchema<UserSteamAppRefDataConfigDto>(refData, UserSteamAppRefDataConfigSchema, true)
+    const apps = await getFilteredAppsWithUserConfig(refDataDto);
     response.json(apps);
 });
 
