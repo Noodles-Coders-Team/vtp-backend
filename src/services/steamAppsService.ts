@@ -285,14 +285,14 @@ function parseTagWeights(tag_weights: string | undefined): number[] {
 
 
 export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[]): Promise<FilteredSteamAppDto[]> {
-    const tagsVal = config.filter(ref => ref.type = SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
-    const tagsWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.TAG).map(ref => ref.score);
+    const tagsVal = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
+    const tagsWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.score);
 
-    const categoryVal = config.filter(ref => ref.type = SteamAppReferenceDataType.CATEGORY).map(ref => ref.value.toString());
-    const categoryWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.CATEGORY).map(ref => ref.score);
+    const categoryVal = config.filter(ref => ref.type == SteamAppReferenceDataType.CATEGORY).map(ref => ref.value.toString());
+    const categoryWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.CATEGORY).map(ref => ref.score);
 
-    const genresVal = config.filter(ref => ref.type = SteamAppReferenceDataType.GENRE).map(ref => ref.value.toString());
-    const genresWeight = config.filter(ref => ref.type = SteamAppReferenceDataType.GENRE).map(ref => ref.score);
+    const genresVal = config.filter(ref => ref.type == SteamAppReferenceDataType.GENRE).map(ref => ref.value.toString());
+    const genresWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.GENRE).map(ref => ref.score);
 
     const limit = 25;
 
