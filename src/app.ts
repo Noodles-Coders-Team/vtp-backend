@@ -1,9 +1,10 @@
 import cors from 'cors';
-import express, {NextFunction} from 'express';
+import express from 'express';
 import usersRouter from './routes/users';
 import steamAppRouter from './routes/steam_apps';
 import steamAppRefDataRouter from './routes/steam_app_reference_data';
 import userGameScoreRouter from './routes/user_game_score';
+import settingsRouter from './routes/settings';
 import swaggerUi from 'swagger-ui-express';
 import {swaggerSpec} from './config/swagger';
 
@@ -25,6 +26,7 @@ app.use('/users', usersRouter);
 app.use('/steam-apps', steamAppRouter);
 app.use('/steam-app-ref-data', steamAppRefDataRouter);
 app.use('/user-game-score', userGameScoreRouter);
+app.use('/settings', settingsRouter);
 
 app.use((req, res) =>
     res.status(404).json({error: 'Not found'}));
