@@ -21,10 +21,12 @@
   },
   "homepage": "https://github.com/Noodles-Coders-Team/weather-backend#readme",
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.7.18",
     "@nct/vtp-common": "file:../vtp-common",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/node-schedule": "^2.1.8",
+    "better-auth": "^1.7.18",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "csv-parser": "^3.2.1",

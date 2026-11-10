@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {loadAllScoreConfigForUser, saveScoreConfig} from "../services/userGameScoreService";
-import {validateRequest} from "../middleware/validate";
+import {validateRequestSchema} from "../middleware/validateRequestSchema";
 import {UserGameScoreConfigSchema} from "@nct/vtp-common";
 
 
@@ -13,7 +13,7 @@ router.get('/', async (request, response) => {
 });
 
 
-router.post('/', validateRequest(UserGameScoreConfigSchema), async (request, response) => {
+router.post('/', validateRequestSchema(UserGameScoreConfigSchema), async (request, response) => {
     await saveScoreConfig(request.body);
     response.statusCode = 200;
     response.send();

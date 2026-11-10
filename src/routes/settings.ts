@@ -6,7 +6,7 @@ import {
     getSettingByKey,
     updateSetting
 } from "../services/settingsService";
-import {validateRequest} from "../middleware/validate";
+import {validateRequestSchema} from "../middleware/validateRequestSchema";
 import {SettingSchema} from "@nct/vtp-common";
 
 
@@ -102,7 +102,7 @@ router.get('/:key', async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post('/', validateRequest(SettingSchema), async (request, response) => {
+router.post('/', validateRequestSchema(SettingSchema), async (request, response) => {
     const setting = await createSetting(request.body);
     response.json(setting);
 });
@@ -134,7 +134,7 @@ router.post('/', validateRequest(SettingSchema), async (request, response) => {
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put('/', validateRequest(SettingSchema), async (request, response) => {
+router.put('/', validateRequestSchema(SettingSchema), async (request, response) => {
     const setting = await updateSetting(request.body);
     response.json(setting);
 });

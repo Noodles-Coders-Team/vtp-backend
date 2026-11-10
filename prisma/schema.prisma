@@ -31,13 +31,6 @@ model SteamApp {
   @@map("steam_app")
 }
 
-model Users {
-  login     String @id
-  user_name String
-
-  @@map("users")
-}
-
 model Settings {
   key       String  @id
   value     String
@@ -49,7 +42,7 @@ model Settings {
 
 model UserGameScoreConfig {
   id                 String @id
-  user_login         String
+  user_id            String
   score_config_label String
   score_config       Json
 
@@ -64,133 +57,65 @@ model SteamAppReferenceData {
   @@map("steam_app_reference_data")
 }
 
-// model Game {
-//   id           String    @id @default(uuid())
-//   name         String
-//   release_date DateTime?
-//   link         String?
-//   recorded     Boolean
-//
-//   ranks     Rank[]
-//   game_info GameInformation?
-//
-//   @@map("game")
-// }
-//
-// model GameInformation {
-//   id         String   @id @default(uuid())
-//   game_id    String   @unique
-//   discussed  Boolean
-//   can_record Boolean
-//   genre      String[] // DBML 'varchar[]' maps to String[]
-//   tags       String[]
-//   notes      String?
-//
-//   game Game @relation(fields: [game_id], references: [id])
-//
-//   @@map("game_info")
-// }
-//
-// model Rank {
-//   id      String   @id @default(uuid())
-//   game_id String
-//   date    DateTime
-//   rank    Float // Kept as 'rank' but mapped to Float; Prisma allows field names matching DBML columns
-//
-//   game Game @relation(fields: [game_id], references: [id])
-//
-//   @@map("rank")
-// }
-//
-// model Post {
-//   id      String  @id
-//   game_id String?
-//
-//   post_informations PostInformation[]
-//
-//   @@map("post")
-// }
-//
-// model PostInformation {
-//   id           String   @id @default(uuid())
-//   import_date  DateTime @default(now())
-//   category     String? // Video Shorts or Post, determined on data import
-//   version_id   Int      @default(1)
-//   post_id      String
-//   post_title   String?
-//   publish_time String?
-//   duration     Int // ==15 - post; < 300 - shorts; > 300 regular video
-//
-//   engaged_views            Int?
-//   average_view_duration    String?
-//   average_viewed_percent   Float?
-//   stayed_to_watch_percent  Float?
-//   unique_viewers           Int?
-//   unique_reach             Int?
-//   average_views_per_viewer Float?
-//   new_viewers              Int?
-//   returning_viewers        Int?
-//   casual_viewers           Int?
-//   regular_viewers          Int?
-//
-//   hypes       Int?
-//   hype_points Int?
-//
-//   subscribers_gained Int?
-//   subscribers_lost   Int?
-//
-//   likes                     Int?
-//   dislikes                  Int?
-//   likes_vs_dislikes_percent Float?
-//
-//   shares         Int?
-//   comments_added Int?
-//
-//   total_sales_usd Float?
-//   orders          Int?
-//
-//   approved_commissions_usd Float? // approved_commissions_usd
-//   pending_commissions_usd  Float? // pending_commissions_usd
-//   removed_commission_usd   Float? // removed_commission_usd
-//
-//   youtube_premium_views            Int?
-//   youtube_premium_watch_time_hours Float? // youtube_premium_watch_time_hours
-//   playlist_watch_time_hours        Float?
-//   views_from_playlist              Int?
-//   views_per_playlist_start         Float?
-//
-//   hours_streamed Float?
-//   reminders_set  Int?
-//
-//   chat_messages Int?
-//   reactions     Int?
-//   remix_count   Int?
-//   remix_views   Int?
-//
-//   community_clip_views                  Int?
-//   watch_time_from_community_clips_hours Float? // watch_time_from_community_clips_hours
-//
-//   card_clicks                   Int?
-//   cards_shown                   Int?
-//   clicks_per_card_shown_percent Float?
-//
-//   video Post @relation(fields: [post_id], references: [id]) // "ref: post.id < post_information.video_id"
-//
-//   @@map("post_info")
-// }
-//
-// model ChannelData {
-//   id    String @id
-//   views Int
-//
-//   @@map("channel_data")
-// }
-//
-// model DropDownData {
-//   key   String @id
-//   value String
-//   score Int
-//   type  String
-//
-//   @@map("drop_down_data")
-// }
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}

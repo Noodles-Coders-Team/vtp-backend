@@ -1,10 +1,12 @@
 import p from "../lib/prisma";
 import {UserGameScoreConfigDto, UserGameScoreConfigSchema, ValidateSchema} from "@nct/vtp-common";
 
+
 const prisma = p.prisma;
 
+
 export async function loadAllScoreConfigForUser(userId: string): Promise<UserGameScoreConfigDto[]> {
-    const rows = await prisma.userGameScoreConfig.findMany({ where: { user_login: userId } });
+    const rows = await prisma.userGameScoreConfig.findMany({ where: { user_id: userId } });
     return ValidateSchema<UserGameScoreConfigDto>(rows, UserGameScoreConfigSchema, true);
 }
 
