@@ -2,130 +2,112 @@
 
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
+// Generated from prisma/schema.prisma - keep both in sync.
 
-Table steam_app{
+enum steam_app_reference_data_type {
+  GENRE
+  CATEGORY
+  TAG
+}
+
+Table steam_app {
   id int [primary key]
-  is_data_imported bool
-  name string
-  categories string[]
-  genres string[]
-  tags string[]
-  metacritic_score int
-  release_date date
-  review_count Int
-}
-
-Table game{
-  id guid [primary key]
+  is_data_imported bool [not null, default: false]
+  is_tags_imported bool [not null, default: false]
   name varchar
-  release_date date
-  link varchar
-  recorded bool
+  categories varchar[] [not null]
+  genres varchar[] [not null]
+  tags varchar[] [not null]
+  metacritic_score int
+  release_date timestamp
+  review_count int
 }
 
-Table game_info{
-  id guid [primary key]
-  game_id guid
-  discussed bool
-  can_record bool
-  genre varchar[]
-  tags varchar[]
-  notes varchar
-}
-
-Table rank{
-  id guid [primary key]
-  game_id guid
-  date datetime
-  rank float
-}
-
-Table post{
+Table steam_app_reference_data {
   id varchar [primary key]
-  game_id guid
+  value varchar [not null]
+  type steam_app_reference_data_type [not null]
 }
 
-Table post_info{
-  id guid [primary key]
-  import_date datetime
-  category varchar // Video Shorts or Post, determined on data import
-  version_id int
-  post_id varchar
-  post_title string
-  publish_time datetime
-  duration int // ==15 - post; < 300 - shorts; > 300 regular video
-  engaged_views int
-  average_view_duration time
-  average_percentage_viewed_percent float
-  stayed_to_watch_percent float
-  unique_viewers int
-  unique_reach int
-  average_views_per_viewer float
-  new_viewers int
-  returning_viewers int
-  casual_viewers int
-  regular_viewers int
-  hypes int
-  hype_points int
-  subscribers_gained int
-  subscribers_lost int
-  likes int
-  dislikes int
-  likes_vs_dislikes_percent float
-  shares int
-  comments_added int
-  total_sales_usd float
-  orders int
-  approved_commissions_usd float
-  pending_commissions_usd float
-  removed_commission_usd float
-  youtube_premium_views int
-  youtube_premium_watch_time_hours float
-  playlist_watch_time_hours float
-  views_from_playlist int
-  views_per_playlist_start float
-  hours_streamed float
-  reminders_set int
-  chat_messages int
-  reactions int
-  remix_count int
-  remix_views int
-  community_clip_views int
-  watch_time_from_community_clips_hours float
-  card_clicks int
-  cards_shown int
-  clicks_per_card_shown_percent float
+Table settings {
+  key varchar [primary key]
+  value varchar [not null]
+  display varchar [not null]
+  is_system bool [not null]
 }
 
-Table channel_data{
+Table user_game_score_config {
   id varchar [primary key]
-  views int
+  user_id varchar [not null]
+  score_config_label varchar [not null]
+  score_config json [not null]
 }
 
-Table users{
-  login varchar [primary key]
-  user_name varchar
-  permission_level varchar // Edit & View only?
+Table user {
+  id varchar [primary key]
+  name varchar [not null]
+  email varchar [not null, unique]
+  emailVerified bool [not null, default: false]
+  image varchar
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+
+  role varchar
+  banned bool [default: false]
+  banReason varchar
+  banExpires timestamp
 }
 
-Table drop_down_data{
-  value varchar [primary key]
-  score int
-  type varchar
+Table session {
+  id varchar [primary key]
+  expiresAt timestamp [not null]
+  token varchar [not null, unique]
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+  ipAddress varchar
+  userAgent varchar
+  userId varchar [not null]
+
+  impersonatedBy varchar
+
+  indexes {
+    userId
+  }
 }
 
-Table settings{
-  key varchaer [primary key]
-  value varchar
-  display varchar
+Table account {
+  id varchar [primary key]
+  accountId varchar [not null]
+  providerId varchar [not null]
+  userId varchar [not null]
+  accessToken varchar
+  refreshToken varchar
+  idToken varchar
+  accessTokenExpiresAt timestamp
+  refreshTokenExpiresAt timestamp
+  scope varchar
+  password varchar
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+
+  indexes {
+    userId
+  }
+}
+
+Table verification {
+  id varchar [primary key]
+  identifier varchar [not null]
+  value varchar [not null]
+  expiresAt timestamp [not null]
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+
+  indexes {
+    identifier
+  }
 }
 
 //References
-ref game_used_in_video:  post.game_id > game.id
-ref post_info:  post.id < post_info.post_id
-ref game_ranking:  game.id < rank.game_id 
-ref game_info: game.id - game_info.game_id
-
-dep: post -> post_info [note: 'Import all of channel data split into two tables']
-dep: game -> game_info [note: "Import of game table"]
-dep: game -> rank [note: "Import of game table"]
+ref user_sessions: session.userId > user.id [delete: cascade]
+ref user_accounts: account.userId > user.id [delete: cascade]

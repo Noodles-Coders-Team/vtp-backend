@@ -2,6 +2,7 @@ import {Router} from "express";
 import getAllReferenceData, {updateAllSteamReferenceDataAndSaveIt} from "../services/steamAppReferenceDataService";
 
 
+// Documented in src/docs/steam_app_reference_data.yaml
 const router = Router();
 
 

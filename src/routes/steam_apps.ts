@@ -13,6 +13,7 @@ import {
 import {UserSteamAppRefDataConfigDto, UserSteamAppRefDataConfigSchema, ValidateSchema} from "@nct/vtp-common";
 
 
+// Documented in src/docs/steam_apps.yaml
 const router = Router();
 
 

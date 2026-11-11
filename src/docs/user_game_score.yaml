@@ -1,0 +1,10 @@
+# Documents src/routes/user_game_score.ts
+# The "Score Config" tag is declared in src/config/swagger.ts
+paths:
+  /user-game-score:
+    get:
+      tags: [Score Config]
+      summary: List the saved scoring configs for a user
+    post:
+      tags: [Score Config]
+      summary: Save a scoring config

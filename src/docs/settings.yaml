@@ -1,0 +1,21 @@
+# Documents src/routes/settings.ts
+# The "Settings" tag is declared in src/config/swagger.ts
+paths:
+  /settings:
+    get:
+      tags: [Settings]
+      summary: List all settings
+    post:
+      tags: [Settings]
+      summary: Create a setting
+    put:
+      tags: [Settings]
+      summary: Update an existing setting
+
+  /settings/{key}:
+    get:
+      tags: [Settings]
+      summary: Get a single setting by key
+    delete:
+      tags: [Settings]
+      summary: Delete a setting by key

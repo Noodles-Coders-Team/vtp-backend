@@ -1,0 +1,12 @@
+# Documents src/routes/steam_app_reference_data.ts
+# The "Reference Data" tag is declared in src/config/swagger.ts
+paths:
+  /steam-app-ref-data:
+    get:
+      tags: [Reference Data]
+      summary: List every known genre, category and tag
+
+  /steam-app-ref-data/update:
+    get:
+      tags: [Reference Data]
+      summary: Rebuild the dictionary from the apps currently in the catalogue

@@ -10,11 +10,12 @@ import {toNodeHandler} from "better-auth/node";
 import {auth} from "./lib/auth";
 import {validateAuth} from "./middleware/validateAuth";
 import {requireRole} from "./middleware/requireRole";
-import {UserRoles} from "./enums/UserRoles";
+import {UserRoles} from "@nct/vtp-common";
+
 
 const app = express();
 app.use(cors({
-    //That's why my post request wont work no longer (most probably)
+    //That's why my post request won't work no longer (most probably)
     origin: ' http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
@@ -23,7 +24,7 @@ app.all("/api/auth/{*any}", toNodeHandler(auth));
 app.use(express.json());
 
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/docs', validateAuth, requireRole([UserRoles.Admin]),  swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 // Another way for adding validation

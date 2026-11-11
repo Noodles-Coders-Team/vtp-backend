@@ -2,9 +2,10 @@ import {betterAuth} from "better-auth";
 import {prismaAdapter} from "better-auth/adapters/prisma";
 import p from "../lib/prisma";
 import {admin} from "better-auth/plugins";
-import {UserRoles} from "../enums/UserRoles";
+import {UserRoles} from "@nct/vtp-common";
 
 const prisma = p.prisma;
+
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {

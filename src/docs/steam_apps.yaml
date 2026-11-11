@@ -1,0 +1,47 @@
+# Documents src/routes/steam_apps.ts
+# The "Steam Apps" tag is declared in src/config/swagger.ts
+paths:
+  /steam-apps/imported-apps:
+    get:
+      tags: [Steam Apps]
+      summary: List enriched apps, one page at a time
+
+  /steam-apps/apps-filtered:
+    get:
+      tags: [Steam Apps]
+      summary: Rank apps against a list of tags and their weights
+
+  /steam-apps/apps-filtered-with-user-config:
+    post:
+      tags: [Steam Apps]
+      summary: Rank apps against a full genre, category and tag scoring config
+
+  /steam-apps/trigger-all-games-scheduler:
+    get:
+      tags: [Steam Apps]
+      summary: Switch the catalogue import job on, or off if it is already running
+
+  /steam-apps/all-games-scheduler-status:
+    get:
+      tags: [Steam Apps]
+      summary: Report whether the catalogue import job is running
+
+  /steam-apps/trigger-all-data-scheduler:
+    get:
+      tags: [Steam Apps]
+      summary: Switch the store details import job on, or off if it is already running
+
+  /steam-apps/all-data-scheduler-status:
+    get:
+      tags: [Steam Apps]
+      summary: Report whether the store details import job is running
+
+  /steam-apps/trigger-all-tags-scheduler:
+    get:
+      tags: [Steam Apps]
+      summary: Switch the tag import job on, or off if it is already running
+
+  /steam-apps/all-tags-scheduler-status:
+    get:
+      tags: [Steam Apps]
+      summary: Report whether the tag import job is running

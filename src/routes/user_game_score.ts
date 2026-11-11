@@ -4,6 +4,7 @@ import {validateRequestSchema} from "../middleware/validateRequestSchema";
 import {UserGameScoreConfigSchema} from "@nct/vtp-common";
 
 
+// Documented in src/docs/user_game_score.yaml
 const router = Router();
 
 
