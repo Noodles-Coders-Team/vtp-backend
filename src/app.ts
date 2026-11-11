@@ -9,6 +9,8 @@ import {swaggerSpec} from './config/swagger';
 import {toNodeHandler} from "better-auth/node";
 import {auth} from "./lib/auth";
 import {validateAuth} from "./middleware/validateAuth";
+import {requireRole} from "./middleware/requireRole";
+import {UserRoles} from "./enums/UserRoles";
 
 const app = express();
 app.use(cors({
@@ -25,12 +27,11 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 // Another way for adding validation
-//app.use('/users', validate(CreateUserSchema), usersRouter);
-// app.use('/users', validateAuth,  usersRouter);
+// app.use('/users', validate(CreateUserSchema), usersRouter);
 app.use('/steam-apps', validateAuth, steamAppRouter);
 app.use('/steam-app-ref-data', validateAuth, steamAppRefDataRouter);
 app.use('/user-game-score', validateAuth, userGameScoreRouter);
-app.use('/settings', validateAuth, settingsRouter);
+app.use('/settings', validateAuth, requireRole([UserRoles.Admin]), settingsRouter);
 
 app.use((req, res) =>
     res.status(404).json({error: 'Not found'}));

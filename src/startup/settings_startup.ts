@@ -1,13 +1,6 @@
 import {SettingDto} from "@nct/vtp-common";
 import {createDefaultSetting} from "../services/settingsService";
-
-
-export enum SystemSettingName {
-    SteamAppTableImported = 'steam_app_table_imported',
-    SteamAppsImported = 'steam_apps_imported',
-    SteamAppDataImported = 'steam_app_data_imported',
-    SteamAppTagsImported = 'steam_app_tags_imported',
-}
+import {SystemSettingName} from "../enums/SystemSettingName";
 
 
 const DEFAULT_SETTINGS: SettingDto[] = [
