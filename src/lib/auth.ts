@@ -18,6 +18,6 @@ export const auth = betterAuth({
     plugins: [admin({
         defaultRole: UserRoles.User,
         adminRoles: [UserRoles.Admin],
-        adminUserIds: ["QbeyKYD2tFg0xjAOurg40ecjoGGJD8Fa"]
+        adminUserIds: []
     })],
 });
