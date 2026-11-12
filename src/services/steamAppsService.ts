@@ -19,9 +19,10 @@ const LIMIT_APPS_PER_BATCH = 50;
 // https://stackoverflow.com/questions/48432356/node-js-express-how-to-schedule-task
 
 
+//TODO: add single job triggers, not for runs but RUN ONCE
 export async function triggerAllSteamAppsScheduler() {
     const rule = new schedule.RecurrenceRule();
-    rule.second = new schedule.Range(0, 59, 30);
+    rule.hour = new schedule.Range(0, 24, 1);
     toggleJobRunner(rule, 'AllSteamApps', getSteamAppsAndSaveThem);
 }
 
@@ -244,46 +245,6 @@ export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
 
 
 // https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries
-export async function getFilteredApps(tags: string, tag_weights: string): Promise<FilteredSteamAppDto[]> {
-    const tagList = parseTags(tags);
-    const weightList = parseTagWeights(tag_weights);
-    if (tagList.length === 0 || tagList.length !== weightList.length)
-        return [];
-
-    const limit = 25;
-
-    return await prisma.$queryRaw<FilteredSteamAppDto[]>`
-        SELECT a.*, COALESCE(r.rating, 0) AS rating
-        FROM steam_app a
-                 LEFT JOIN LATERAL (
-            SELECT SUM(w.weight)::int AS rating
-            FROM unnest(${tagList}::text[], ${weightList}::int[]) AS w(tag, weight)
-            WHERE w.tag = ANY (a.tags)
-            ) r ON true
-        WHERE a.release_date IS NOT NULL
-        ORDER BY rating DESC
-        LIMIT ${limit};`;
-}
-
-
-// Accepts both "Tennis, MOBA" and the quoted "'Tennis', 'MOBA'" form shown in the UI placeholder
-function parseTags(tags: string | undefined): string[] {
-    return (tags ?? '').split(',')
-        .map(tag => tag.trim().replace(/^['"]|['"]$/g, '').trim())
-        .filter(tag => tag.length > 0);
-}
-
-
-function parseTagWeights(tag_weights: string | undefined): number[] {
-    return (tag_weights ?? '').split(',')
-        .map(weight => weight.trim())
-        .filter(weight => weight.length > 0)
-        .map(weight => Number(weight))
-        // a non-numeric weight drops out here, tripping the length check against the tags
-        .filter(weight => Number.isFinite(weight));
-}
-
-
 export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[]): Promise<FilteredSteamAppDto[]> {
     const tagsVal = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
     const tagsWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.score);
@@ -303,31 +264,31 @@ export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataC
                    + coalesce(r_tags.rating, 0) as rating
         from steam_app a
                  left join lateral (
-            select sum(w.weight)::int as rating
+            select sum(w.weight) ::int as rating
             from unnest(
                          ${tagsVal}::text[],
                          ${tagsWeight}::int[])
                      as w(tag, weight)
             where w.tag = any (a.tags)
-            ) r_tags on true
+                ) r_tags on true
                  left join lateral (
-            select sum(w.weight)::int AS rating
+            select sum(w.weight) ::int AS rating
             from unnest(
                          ${categoryVal}::text[],
                          ${categoryWeight}::int[])
                      as w(category, weight)
             where w.category = any (a.categories)
-            ) r_categories on true
+                ) r_categories on true
                  left join lateral (
-            select sum(w.weight)::int as rating
+            select sum(w.weight) ::int as rating
             from unnest(
                          ${genresVal}::text[],
                          ${genresWeight}::int[])
                      as w(genre, weight)
             where w.genre = any (a.genres)
-            ) r_genres on true
+                ) r_genres on true
         where a.release_date is not null
           and a.release_date < NOW()
         order by rating desc
-        limit ${limit};`;
+            limit ${limit};`;
 }

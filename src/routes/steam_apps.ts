@@ -3,21 +3,26 @@ import {
     getAllSteamAppsDataScheduler,
     getAllSteamAppsSchedulerStatus,
     getAllSteamAppsTagsScheduler,
-    getFilteredApps,
     getFilteredAppsWithUserConfig,
     getImportedApps,
     triggerAllSteamAppsDataScheduler,
     triggerAllSteamAppsScheduler,
     triggerAllSteamAppsTagsScheduler
 } from "../services/steamAppsService";
-import {UserSteamAppRefDataConfigDto, UserSteamAppRefDataConfigSchema, ValidateSchema} from "@nct/vtp-common";
+import {
+    UserRoles,
+    UserSteamAppRefDataConfigDto,
+    UserSteamAppRefDataConfigSchema,
+    ValidateSchema
+} from "@nct/vtp-common";
+import {requireRole} from "../middleware/requireRole";
 
 
 // Documented in src/docs/steam_apps.yaml
 const router = Router();
 
 
-router.get('/trigger-all-games-scheduler', async (request, response) => {
+router.get('/trigger-all-games-scheduler', requireRole([UserRoles.Admin]), async (request, response) => {
     await triggerAllSteamAppsScheduler();
     const status = getAllSteamAppsSchedulerStatus();
     response.status(202);
@@ -25,13 +30,13 @@ router.get('/trigger-all-games-scheduler', async (request, response) => {
 });
 
 
-router.get('/all-games-scheduler-status', async (request, response) => {
+router.get('/all-games-scheduler-status', requireRole([UserRoles.Admin]), async (request, response) => {
     const status = getAllSteamAppsSchedulerStatus();
     response.status(200).json({isActive: status});
 });
 
 
-router.get('/trigger-all-data-scheduler', async (request, response) => {
+router.get('/trigger-all-data-scheduler', requireRole([UserRoles.Admin]), async (request, response) => {
     await triggerAllSteamAppsDataScheduler();
     const status = getAllSteamAppsDataScheduler();
     response.status(202);
@@ -39,13 +44,13 @@ router.get('/trigger-all-data-scheduler', async (request, response) => {
 });
 
 
-router.get('/all-data-scheduler-status', async (request, response) => {
+router.get('/all-data-scheduler-status', requireRole([UserRoles.Admin]), async (request, response) => {
     const status = getAllSteamAppsDataScheduler();
     response.status(200).json({isActive: status});
 });
 
 
-router.get('/trigger-all-tags-scheduler', async (request, response) => {
+router.get('/trigger-all-tags-scheduler', requireRole([UserRoles.Admin]), async (request, response) => {
     await triggerAllSteamAppsTagsScheduler();
     const status = getAllSteamAppsTagsScheduler();
     response.status(202);
@@ -53,7 +58,7 @@ router.get('/trigger-all-tags-scheduler', async (request, response) => {
 });
 
 
-router.get('/all-tags-scheduler-status', async (request, response) => {
+router.get('/all-tags-scheduler-status', requireRole([UserRoles.Admin]), async (request, response) => {
     const status = getAllSteamAppsTagsScheduler();
     response.status(200).json({isActive: status});
 });
@@ -65,15 +70,6 @@ router.get('/imported-apps', async (request, response) => {
         page = "1";
 
     const apps = await getImportedApps(Number(page));
-    response.json(apps);
-});
-
-
-router.get('/apps-filtered', async (request, response) => {
-    let tags: string = request.query.tags as string;
-    let tag_weights: string = request.query.tag_weights as string;
-
-    const apps = await getFilteredApps(tags, tag_weights);
     response.json(apps);
 });
 

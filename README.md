@@ -291,10 +291,6 @@ Both scoring endpoints return at most 25 rows and only consider apps with a rele
 carry a `rating` field that is not part of `SteamAppSchema`; the client validates responses
 against that schema, which strips it.
 
-A saved config (`user_game_score_config.score_config`) is a `Json` column holding a
-`UserSteamAppRefDataConfigDto[]`. `SCHEMA.md`, alongside the three repos in the parent
-directory, explains how that column is kept honest against zod.
-
 ## Settings
 
 `settingsStartup()` runs before the port is bound and upserts four system settings, each

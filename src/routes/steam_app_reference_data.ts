@@ -1,5 +1,7 @@
 import {Router} from "express";
 import getAllReferenceData, {updateAllSteamReferenceDataAndSaveIt} from "../services/steamAppReferenceDataService";
+import {requireRole} from "../middleware/requireRole";
+import {UserRoles} from "@nct/vtp-common";
 
 
 // Documented in src/docs/steam_app_reference_data.yaml
@@ -12,7 +14,7 @@ router.get('/', async (request, response) => {
 });
 
 
-router.get('/update', async (request, response) => {
+router.get('/update', requireRole([UserRoles.Admin]), async (request, response) => {
     await updateAllSteamReferenceDataAndSaveIt();
     response.status(200).send();
 });
