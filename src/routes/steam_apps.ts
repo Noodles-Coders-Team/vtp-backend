@@ -4,6 +4,7 @@ import {
     getAllSteamAppsSchedulerStatus,
     getAllSteamAppsTagsScheduler,
     getFilteredAppsWithUserConfig,
+    getFilteredAppsWithUserConfigById,
     getImportedApps,
     triggerAllSteamAppsDataScheduler,
     triggerAllSteamAppsScheduler,
@@ -76,9 +77,17 @@ router.get('/imported-apps', async (request, response) => {
 
 router.post('/apps-filtered-with-user-config', async (request, response) => {
     const refData: UserSteamAppRefDataConfigDto[] = request.body;
-    console.log(refData);
     const refDataDto = ValidateSchema<UserSteamAppRefDataConfigDto>(refData, UserSteamAppRefDataConfigSchema, true)
     const apps = await getFilteredAppsWithUserConfig(refDataDto);
+    response.json(apps);
+});
+
+
+router.get('filter-apps-by-config/:configId', async (request, response) => {
+    const session = response.locals.session;
+    const userId: string = session.user.id;
+    const configId = request.params.configId;
+    const apps = await getFilteredAppsWithUserConfigById(configId, userId);
     response.json(apps);
 });
 

@@ -6,6 +6,7 @@ import {SteamSpyResponse} from "../lib/Interfaces";
 import SteamWrapper from "../classes/SteamWrapper";
 import {isJobRunning, toggleJobRunner} from "./jobsService";
 import {SteamAppReferenceDataType} from "../generated/prisma/enums";
+import {getScoreConfig} from "./userGameScoreService";
 
 const prisma = p.prisma;
 
@@ -20,6 +21,7 @@ const LIMIT_APPS_PER_BATCH = 50;
 
 
 //TODO: add single job triggers, not for runs but RUN ONCE
+//TODO: add checks if there is none left - stop the job
 export async function triggerAllSteamAppsScheduler() {
     const rule = new schedule.RecurrenceRule();
     rule.hour = new schedule.Range(0, 24, 1);
@@ -244,7 +246,14 @@ export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
 }
 
 
+// TODO: add values for minimum review count and rate
 // https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries
+
+export async function getFilteredAppsWithUserConfigById(userId: string, configId: string): Promise<FilteredSteamAppDto[]> {
+    const config = await getScoreConfig(userId, configId);
+    return await getFilteredAppsWithUserConfig(config.score_config);
+}
+
 export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[]): Promise<FilteredSteamAppDto[]> {
     const tagsVal = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
     const tagsWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.score);
