@@ -150,8 +150,8 @@ export async function createSteamApps(apps: SteamAppDto[]) {
 export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
     const pageLimit = 50;
     return await prisma.steamApp.findMany({
-        where: {is_data_imported: true, tags: {isEmpty: false}},
-        orderBy: {id: "asc"},
+        where: {last_info_updated: {not: null}},
+        orderBy: {id: "desc"},
         take: pageLimit,
         skip: pageLimit * (page - 1)
     });
