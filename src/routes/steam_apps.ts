@@ -2,13 +2,11 @@ import {Router} from "express";
 import {
     getAllSteamAppsDataScheduler,
     getAllSteamAppsSchedulerStatus,
-    getAllSteamAppsTagsScheduler,
     getFilteredAppsWithUserConfig,
     getFilteredAppsWithUserConfigById,
     getImportedApps,
     triggerAllSteamAppsDataScheduler,
     triggerAllSteamAppsScheduler,
-    triggerAllSteamAppsTagsScheduler
 } from "../services/steamAppsService";
 import {
     UserRoles,
@@ -47,20 +45,6 @@ router.get('/trigger-all-data-scheduler', requireRole([UserRoles.Admin]), async 
 
 router.get('/all-data-scheduler-status', requireRole([UserRoles.Admin]), async (request, response) => {
     const status = getAllSteamAppsDataScheduler();
-    response.status(200).json({isActive: status});
-});
-
-
-router.get('/trigger-all-tags-scheduler', requireRole([UserRoles.Admin]), async (request, response) => {
-    await triggerAllSteamAppsTagsScheduler();
-    const status = getAllSteamAppsTagsScheduler();
-    response.status(202);
-    response.json({isActive: status})
-});
-
-
-router.get('/all-tags-scheduler-status', requireRole([UserRoles.Admin]), async (request, response) => {
-    const status = getAllSteamAppsTagsScheduler();
     response.status(200).json({isActive: status});
 });
 

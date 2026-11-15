@@ -1,6 +1,12 @@
 import {load} from "cheerio";
 import {SteamRequestLimitExceeded} from "./Errors";
-import {AppListResponse, SteamAppDetails, SteamAppDetailsResponse, SteamSpyResponse} from "../lib/Interfaces";
+import {
+    AppListResponse,
+    RawAppReviewProps,
+    SteamAppDetails,
+    SteamAppDetailsResponse,
+    SteamAppWebDetails
+} from "../lib/Interfaces";
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 if (!STEAM_API_KEY) {
@@ -59,7 +65,7 @@ class SteamWrapper {
     }
 
 
-    public async getAppTags(appId: string): Promise<string[]> {
+    public async getAppWebInformation(appId: string): Promise<SteamAppWebDetails | null> {
         const URL = `https://store.steampowered.com/app/${appId}?cc=us&l=english`;
         const response = await fetch(URL, {
             headers: {'Cookie': 'birthtime=283993201'},
@@ -70,23 +76,61 @@ class SteamWrapper {
             throw new SteamRequestLimitExceeded('Exceeded Steam API limits');
         } else if (response.status == 301 || response.status == 302) {
             console.warn(`Steam store page for app ${appId} is gated or delisted (redirects to ${response.headers.get('location')})`);
-            return [];
+            return null;
         } else if (!response.ok) {
             console.warn(`SteamApi unknown response. Message: ${await response.text()}`);
-            return [];
+            return null;
         }
 
         const cheerio = load(await response.text());
-
-        return cheerio('a.app_tag')
+        const tags: string[] = cheerio('a.app_tag')
             .not('.add_button')
             .map((_, el) => cheerio(el).text().trim())
             .get()
             .filter(tag => tag !== '');
+
+        const reviews = this.parseReviewSummary(cheerio('[data-featuretarget="appreviews"]').attr('data-props'));
+
+        return {
+            recommendations: reviews.total,
+            positive_recommendations: reviews.positive,
+            percent_positive_recommendations: reviews.percent,
+            tags: tags
+        };
     }
 
 
-    mapSteamApp(body: SteamAppDetailsResponse, appId: number): SteamAppDetails | undefined {
+    private parseReviewSummary(rawProps: string | undefined): {
+        total: number | null;
+        positive: number | null;
+        percent: number | null;
+    } {
+        const noReviews = {total: null, positive: null, percent: null};
+        if (!rawProps) {
+            console.warn('Steam store page has no appreviews props');
+            return noReviews;
+        }
+
+        let props: RawAppReviewProps;
+        try {
+            props = JSON.parse(rawProps);
+        } catch (error) {
+            console.warn(`Could not parse the appreviews props: ${error}`);
+            return noReviews;
+        }
+
+        const summary = props.summary_options?.summaryDisplayed;
+        const total = props.summary_num_reviews ?? summary?.nReviews ?? null;
+        const positive = props.summary_num_positive_reviews ?? summary?.nReviewsPositive ?? null;
+
+        // An app with no reviews yet carries neither count
+        if (total === null || positive === null || total <= 0) return noReviews;
+
+        return {total, positive, percent: Math.round((positive / total) * 100)};
+    }
+
+
+    private mapSteamApp(body: SteamAppDetailsResponse, appId: number): SteamAppDetails | undefined {
         const entry = body[appId];
         if (!entry?.success || !entry.data) return undefined;
 
@@ -95,7 +139,6 @@ class SteamWrapper {
         return {
             appId,
             name: data.name,
-            metacritic: data.metacritic?.score ?? null,
             recommendations: data.recommendations?.total ?? null,
             categories: data.categories?.map((c) => c.description) ?? [],
             genres: data.genres?.map((g) => g.description) ?? [],
@@ -103,7 +146,7 @@ class SteamWrapper {
         };
     }
 
-    parseSteamDate(raw?: string): Date | null {
+    private parseSteamDate(raw?: string): Date | null {
         if (!raw) return null;
 
         let m = raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\w*,?\s+(\d{4})$/);

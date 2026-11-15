@@ -2,7 +2,7 @@ import p from "../lib/prisma";
 import {SteamAppDto, type UserSteamAppRefDataConfigDto} from "@nct/vtp-common";
 import {SteamRequestLimitExceeded} from "../classes/Errors";
 import schedule from 'node-schedule';
-import {SteamSpyResponse} from "../lib/Interfaces";
+import {SteamAppWebDetails} from "../lib/Interfaces";
 import SteamWrapper from "../classes/SteamWrapper";
 import {isJobRunning, toggleJobRunner} from "./jobsService";
 import {SteamAppReferenceDataType} from "../generated/prisma/enums";
@@ -32,16 +32,8 @@ export async function triggerAllSteamAppsScheduler() {
 export async function triggerAllSteamAppsDataScheduler() {
     const rule = new schedule.RecurrenceRule();
     //rule.second = new schedule.Range(0, 59, 15);
-    rule.minute = new schedule.Range(0, 59, 15);
+    rule.minute = new schedule.Range(0, 59, 2);
     toggleJobRunner(rule, 'AllSteamAppsData', getSteamAppsDataAndSaveThem);
-}
-
-
-export async function triggerAllSteamAppsTagsScheduler() {
-    const rule = new schedule.RecurrenceRule();
-    //rule.minute = new schedule.Range(0, 59, 2);
-    rule.minute = new schedule.Range(0, 59, 45);
-    toggleJobRunner(rule, 'AllSteamAppsTags', getSteamAppsTagsAndSaveThem);
 }
 
 
@@ -52,11 +44,6 @@ export function getAllSteamAppsSchedulerStatus() {
 
 export function getAllSteamAppsDataScheduler() {
     return isJobRunning('AllSteamAppsData');
-}
-
-
-export function getAllSteamAppsTagsScheduler() {
-    return isJobRunning('AllSteamAppsTags');
 }
 
 
@@ -106,73 +93,25 @@ async function getSteamAppsDataAndSaveThem(): Promise<void> {
 }
 
 
-async function getSteamAppsTagsAndSaveThem() {
-    const appIds = await getImportedAppsWithoutTags(LIMIT_APPS_PER_BATCH);
-    if (!appIds)
-        return;
-
-    let numberUpdated = 0;
-    try {
-        for (const appId of appIds) {
-            await getSteamAppsTagAndSaveIt(appId);
-            numberUpdated++;
-            await new Promise(f => setTimeout(f, 500));
-        }
-    } catch (error) {
-        if (error instanceof SteamRequestLimitExceeded) {
-            console.warn('Steam API limit exceeded');
-        } else
-            console.error(`Error getSteamAppsTagAndSaveIt: ${error}`);
-    } finally {
-        console.log(`Updated ${numberUpdated} apps`);
-    }
-}
-
-
-async function getSteamAppsTagAndSaveIt(appId: string) {
-    // SteamSpy first: it has no age gate, so it covers the adult-only titles the store scrape cannot reach
-    let tags = await getSteamspyAppTags(appId);
-    if (tags.length === 0) {
-        tags = await steam.getAppTags(appId);
-    }
-    await prisma.steamApp.update({where: {id: Number(appId)}, data: {tags: tags, is_tags_imported: true}});
-}
-
-
 async function getSteamAppDataAndSaveIt(appId: string): Promise<void> {
-    const steamAppDetail = await steam.getAppInformation(appId);
-    let tags = await getSteamspyAppTags(appId);
-    if (tags.length === 0) {
-        tags = await steam.getAppTags(appId);
-    }
+    const appData = await steam.getAppInformation(appId);
+    const webData: SteamAppWebDetails | null = await steam.getAppWebInformation(appId);
 
-    let isTags: boolean = true;
-    if (tags.length === 0)
-        isTags = false;
-
-    let steamApp: SteamAppDto;
-    if (steamAppDetail === undefined) {
-        steamApp = {
+    if (appData !== undefined) {
+        const steamApp: SteamAppDto = {
             id: Number(appId),
-            is_data_imported: true,
-            is_tags_imported: isTags,
-            tags: tags
+            categories: appData.categories,
+            genres: appData.genres,
+            tags: webData?.tags ?? [],
+            name: appData.name,
+            release_date: appData.releaseDate,
+            review_count: webData?.recommendations ?? appData.recommendations,
+            review_positive_count: webData?.positive_recommendations,
+            review_positive_percent: webData?.percent_positive_recommendations,
+            last_info_updated: new Date()
         };
-    } else {
-        steamApp = {
-            id: Number(appId),
-            is_data_imported: true,
-            is_tags_imported: isTags,
-            categories: steamAppDetail.categories,
-            genres: steamAppDetail.genres,
-            tags: tags,
-            metacritic_score: steamAppDetail.metacritic,
-            name: steamAppDetail.name,
-            release_date: steamAppDetail.releaseDate,
-            review_count: steamAppDetail.recommendations
-        };
+        await upsertSteamApp(steamApp);
     }
-    await upsertSteamApp(steamApp);
 }
 
 
@@ -184,8 +123,7 @@ export async function getTheLargestSteamAppId(): Promise<string | undefined> {
 
 export async function getPendingImportSteamAppIds(limit: number): Promise<string[] | undefined> {
     const appData: SteamAppDto[] | null = await prisma.steamApp.findMany({
-        orderBy: {id: "desc"},
-        where: {is_data_imported: false},
+        orderBy: [{last_info_updated: {sort: "asc", nulls: "first"}}, {id: "desc"}],
         take: limit
     });
     return appData?.map(data => data.id.toString());
@@ -206,32 +144,6 @@ export async function createSteamApps(apps: SteamAppDto[]) {
         data: apps,
         skipDuplicates: true, // ignore rows whose id already exists
     });
-}
-
-
-async function getSteamspyAppTags(appId: string): Promise<string[]> {
-    const url = `https://steamspy.com/api.php?request=appdetails&appid=${appId}`;
-    const spyResponse = await fetch(url);
-    if (!spyResponse.ok) {
-        console.log('SteamSpy responded NOT OK');
-        return [];
-    }
-    const body: SteamSpyResponse = await spyResponse.json();
-    return Object.keys(body.tags);
-}
-
-
-async function getImportedAppsWithoutTags(limit: number): Promise<string[]> {
-    const apps = await prisma.steamApp.findMany({
-        where: {
-            is_data_imported: true,
-            tags: {isEmpty: true},
-            is_tags_imported: false
-        },
-        orderBy: {id: "desc"},
-        take: limit,
-    });
-    return apps.map(app => app.id.toString());
 }
 
 

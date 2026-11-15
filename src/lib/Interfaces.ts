@@ -100,10 +100,26 @@ export type SteamAppDetailsResponse = Record<
 >;
 
 
+export interface RawReviewSummary {
+    nReviews?: number;
+    nReviewsPositive?: number;
+    eReviewScore?: number;
+}
+
+
+export interface RawAppReviewProps {
+    summary_num_reviews?: number;
+    summary_num_positive_reviews?: number;
+    summary_options?: {
+        bHasAnyReviews?: boolean;
+        summaryDisplayed?: RawReviewSummary;
+    };
+}
+
+
 export interface SteamAppDetails {
     appId: number;
     name: string;
-    metacritic: number | null;
     recommendations: number | null;
     categories: string[];
     genres: string[];
@@ -111,7 +127,9 @@ export interface SteamAppDetails {
 }
 
 
-export interface SteamSpyResponse {
-    name: string;
-    tags: Record<string, number>;
+export interface SteamAppWebDetails{
+    recommendations: number | null;
+    positive_recommendations: number | null;
+    percent_positive_recommendations: number | null;
+    tags: string[];
 }
