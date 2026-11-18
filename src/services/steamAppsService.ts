@@ -14,7 +14,7 @@ const prisma = p.prisma;
 export type FilteredSteamAppDto = SteamAppDto & { rating: number };
 
 const steam = new SteamWrapper();
-const LIMIT_APPS_PER_BATCH = 50;
+const LIMIT_APPS_PER_BATCH = 100;
 
 // https://github.com/node-schedule/node-schedule
 // https://stackoverflow.com/questions/48432356/node-js-express-how-to-schedule-task

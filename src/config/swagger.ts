@@ -19,10 +19,13 @@ export const swaggerSpec = swaggerJsdoc({
                 "additionally requires the `admin` role."
             ].join("\n")
         },
+        // Relative URL, so "Try it out" targets whichever host loaded the page.
+        // A hardcoded localhost origin would send requests to the reader's own
+        // machine when the docs are opened from another device on the LAN.
         servers: [
             {
-                url: "http://localhost:8080",
-                description: "Local development server"
+                url: "/",
+                description: "The server that served this page"
             }
         ],
         // Swagger UI groups operations by tag and shows the groups in this order, so this

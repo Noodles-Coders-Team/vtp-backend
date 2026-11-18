@@ -11,12 +11,12 @@ import {auth} from "./lib/auth";
 import {validateAuth} from "./middleware/validateAuth";
 import {requireRole} from "./middleware/requireRole";
 import {UserRoles} from "@nct/vtp-common";
+import {allowedOrigins} from "./config/origins";
 
 
 const app = express();
 app.use(cors({
-    //That's why my post request won't work no longer (most probably)
-    origin: ' http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
 }));
