@@ -1,7 +1,7 @@
 import app from './app';
-import p from './lib/prisma';
 import {settingsStartup} from "./startup/settings_startup";
-import {apiPort, allowedOrigins} from "./config/origins";
+import {allowedOrigins, apiPort} from "./config/origins";
+import {jobsStartup} from "./startup/jobs_startup";
 
 const PORT = Number(apiPort);
 
@@ -11,6 +11,7 @@ async function startApp() {
     // console.log('Database connected.');
 
     await settingsStartup();
+    await jobsStartup();
 
     app.listen(PORT, () => {
         console.log(`Server running on port: ${PORT}`);

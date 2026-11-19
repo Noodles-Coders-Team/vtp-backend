@@ -7,6 +7,7 @@ import SteamWrapper from "../classes/SteamWrapper";
 import {isJobRunning, toggleJobRunner} from "./jobsService";
 import {SteamAppReferenceDataType} from "../generated/prisma/enums";
 import {getScoreConfig} from "./userGameScoreService";
+import {SystemSettingName} from "../enums/SystemSettingName";
 
 const prisma = p.prisma;
 
@@ -20,12 +21,11 @@ const LIMIT_APPS_PER_BATCH = 100;
 // https://stackoverflow.com/questions/48432356/node-js-express-how-to-schedule-task
 
 
-//TODO: add single job triggers, not for runs but RUN ONCE
 //TODO: add checks if there is none left - stop the job
 export async function triggerAllSteamAppsScheduler() {
     const rule = new schedule.RecurrenceRule();
     rule.hour = new schedule.Range(0, 24, 1);
-    toggleJobRunner(rule, 'AllSteamApps', getSteamAppsAndSaveThem);
+    toggleJobRunner(rule, SystemSettingName.SteamAppsImport, getSteamAppsAndSaveThem);
 }
 
 
@@ -33,17 +33,17 @@ export async function triggerAllSteamAppsDataScheduler() {
     const rule = new schedule.RecurrenceRule();
     //rule.second = new schedule.Range(0, 59, 15);
     rule.minute = new schedule.Range(0, 59, 2);
-    toggleJobRunner(rule, 'AllSteamAppsData', getSteamAppsDataAndSaveThem);
+    toggleJobRunner(rule, SystemSettingName.SteamAppsDataImport, getSteamAppsDataAndSaveThem);
 }
 
 
 export function getAllSteamAppsSchedulerStatus() {
-    return isJobRunning('AllSteamApps');
+    return isJobRunning(SystemSettingName.SteamAppsImport);
 }
 
 
 export function getAllSteamAppsDataScheduler() {
-    return isJobRunning('AllSteamAppsData');
+    return isJobRunning(SystemSettingName.SteamAppsDataImport);
 }
 
 

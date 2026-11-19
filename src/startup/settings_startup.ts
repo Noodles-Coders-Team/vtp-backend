@@ -11,22 +11,10 @@ const DEFAULT_SETTINGS: SettingDto[] = [
         is_system: true
     },
     {
-        key: SystemSettingName.SteamAppsImported,
+        key: SystemSettingName.SteamAppsDataImport,
         value: "false",
-        display: SystemSettingName.SteamAppsImported,
+        display: SystemSettingName.SteamAppsDataImport,
         is_system: true
-    },
-    {
-        key: SystemSettingName.SteamAppDataImported,
-        value: "false",
-        display: SystemSettingName.SteamAppDataImported,
-        is_system: true
-    },
-    {
-        key: SystemSettingName.SteamAppTagsImported,
-        value: "false",
-        display: SystemSettingName.SteamAppTagsImported,
-        is_system: false
     }
 ];
 

@@ -1,4 +1,5 @@
 import schedule, {Job, RecurrenceRule} from "node-schedule";
+import {getSettingByKey, updateSetting} from "./settingsService";
 
 const jobs: Record<string, Job | null> = {};
 
@@ -14,6 +15,7 @@ export async function toggleJobRunner(rule: RecurrenceRule, name: string, jobFun
     const job = jobs[name];
     if (!job) {
         console.log(`Scheduling ${name} job!`);
+        await switchSystemJobSetting(name, true);
         jobs[name] = schedule.scheduleJob(rule, async function () {
             console.log(`Starting job: ${name}`);
             try {
@@ -29,5 +31,15 @@ export async function toggleJobRunner(rule: RecurrenceRule, name: string, jobFun
         console.log(`Cancelling ${name} job!`);
         job.cancel(false);
         jobs[name] = null;
+        await switchSystemJobSetting(name, false);
     }
+}
+
+export async function switchSystemJobSetting(name: string, value: boolean): Promise<void> {
+    const setting = await getSettingByKey(name);
+    if (setting == null)
+        return;
+
+    setting.value = value.toString();
+    await updateSetting(setting);
 }
