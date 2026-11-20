@@ -4,15 +4,11 @@ import {
     getScoreConfig,
     loadAllScoreConfigForUser,
     saveScoreConfig,
-    saveScoreConfigRefDataById
+    saveScoreConfigRefDataById,
+    saveScoreMinMaxConfigById
 } from "../services/userGameScoreService";
 import {validateRequestSchema} from "../middleware/validateRequestSchema";
-import {
-    UserGameScoreConfigSchema,
-    type UserSteamAppRefDataConfigDto,
-    UserSteamAppRefDataConfigSchema,
-    ValidateSchema
-} from "@nct/vtp-common";
+import {UserGameScoreConfigSchema, UserSteamAppRefDataConfigSchema} from "@nct/vtp-common";
 
 
 // Documented in src/docs/user_game_score.yaml
@@ -44,12 +40,19 @@ router.post('/', validateRequestSchema(UserGameScoreConfigSchema), async (reques
 
 
 router.post('/:configId', validateRequestSchema(UserSteamAppRefDataConfigSchema, true), async (request, response) => {
-// router.post('/:configId', async (request, response) => {
     const session = response.locals.session;
     const configId = request.params.configId;
-    // console.log(request.body);
-    // ValidateSchema<UserSteamAppRefDataConfigDto[]>(request.body, UserSteamAppRefDataConfigSchema, true);
     await saveScoreConfigRefDataById(request.body, configId, session.user.id);
+    response.statusCode = 200;
+    response.send();
+});
+
+
+router.post('/min-max/:configId', async (request, response) => {
+    const session = response.locals.session;
+    const configId = request.params.configId;
+    const {minReviews, minScore} = request.body as { minReviews: number | null, minScore: number | null };
+    await saveScoreMinMaxConfigById(configId, session.user.id, minReviews, minScore);
     response.statusCode = 200;
     response.send();
 });

@@ -49,6 +49,20 @@ export async function saveScoreConfigRefDataById(config: UserSteamAppRefDataConf
 }
 
 
+export async function saveScoreMinMaxConfigById(configId: string, userId: string, minimum_reviews: number | null, positive_reviews_percentage: number | null) {
+    const scoreConfig = await getScoreConfig(userId, configId);
+    scoreConfig.minimum_reviews = minimum_reviews;
+    scoreConfig.positive_reviews_percentage = positive_reviews_percentage;
+    await prisma.userGameScoreConfig.update({
+        where: {
+            user_id: userId,
+            id: configId
+        },
+        data: scoreConfig
+    });
+}
+
+
 export async function getScoreConfig(userId: string, configId: string): Promise<UserGameScoreConfigDto> {
     const config = await prisma.userGameScoreConfig.findFirst({where: {user_id: userId, id: configId}});
     return ValidateSchema<UserGameScoreConfigDto>(config, UserGameScoreConfigSchema);

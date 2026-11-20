@@ -61,17 +61,18 @@ router.get('/imported-apps', async (request, response) => {
 
 router.post('/apps-filtered-with-user-config', async (request, response) => {
     const refData: UserSteamAppRefDataConfigDto[] = request.body;
-    const refDataDto = ValidateSchema<UserSteamAppRefDataConfigDto>(refData, UserSteamAppRefDataConfigSchema, true)
-    const apps = await getFilteredAppsWithUserConfig(refDataDto);
+    const refDataDto = ValidateSchema<UserSteamAppRefDataConfigDto>(refData, UserSteamAppRefDataConfigSchema, true);
+    //TODO: should I add minimums here as well?
+    const apps = await getFilteredAppsWithUserConfig(refDataDto, null, null);
     response.json(apps);
 });
 
 
-router.get('filter-apps-by-config/:configId', async (request, response) => {
+router.get('/filter-apps-by-config/:configId', async (request, response) => {
     const session = response.locals.session;
     const userId: string = session.user.id;
     const configId = request.params.configId;
-    const apps = await getFilteredAppsWithUserConfigById(configId, userId);
+    const apps = await getFilteredAppsWithUserConfigById(userId, configId);
     response.json(apps);
 });
 

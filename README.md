@@ -19,20 +19,28 @@ Part of a three repository set:
 
 ## Getting started
 
-Prerequisites: Node.js 20+, a reachable PostgreSQL instance, and a Steam Web API key.
+Prerequisites: Node.js 22.13+ (see `.nvmrc`), a reachable PostgreSQL instance, and a Steam
+Web API key. Windows and Linux both work, with the same commands.
 
 ```bash
-npm install          # install dependencies
-npx prisma generate  # generate the typed client into src/generated/
+npm install          # installs, then generates the typed client via postinstall
 npm run dev          # start the API on http://localhost:8080
 ```
+
+`src/generated/` is git ignored and the Prisma client is generated per machine, so the
+`postinstall` hook runs `prisma generate` for you; `npm run generate` repeats it on demand.
 
 A local database is easiest through the `docker-compose.yaml` in the parent directory
 (`docker compose up -d postgres`), which brings up postgres 15 on port 5432 and keeps its
 data in `../postgresql/`.
 
 Create a `.env` in the repository root before the first run — it is git ignored, so it
-never arrives with a clone:
+never arrives with a clone. [.env.example](.env.example) is the committed template, so
+every machine starts from the same configuration:
+
+```bash
+cp .env.example .env    # then fill in the password and the Steam key
+```
 
 ```ini
 POSTGRES_USER=...
@@ -63,9 +71,9 @@ connection error instead.
 
 ### After pulling new commits
 
-* `npm install` — if `package.json` changed
+* `npm install` — if `package.json` changed, and it re-generates the client as a side effect
 * `npx prisma migrate dev` — if there are new migrations
-* `npx prisma generate` — if `prisma/schema.prisma` changed
+* `npm run generate` — if `prisma/schema.prisma` changed
 
 ### Scripts
 
@@ -73,6 +81,7 @@ connection error instead.
 | --- | --- |
 | `npm run dev` | Starts the server on port 8080 via `tsx` |
 | `npm run build` | `tsc --noEmit`, i.e. a typecheck only — the app is always run through `tsx` |
+| `npm run generate` | `prisma generate` → `src/generated/prisma` |
 | `npm test` | Runs `src/test.ts`, which is an empty file. Not a test suite |
 
 

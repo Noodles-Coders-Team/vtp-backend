@@ -41,10 +41,12 @@ model Settings {
 }
 
 model UserGameScoreConfig {
-  id                 String @id
-  user_id            String
-  score_config_label String
-  score_config       Json
+  id                          String @id
+  user_id                     String
+  score_config_label          String
+  score_config                Json
+  minimum_reviews             Int?
+  positive_reviews_percentage Int?
 
   @@map("user_game_score_config")
 }

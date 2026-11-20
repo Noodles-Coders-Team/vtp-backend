@@ -78,8 +78,9 @@ async function getSteamAppsDataAndSaveThem(): Promise<void> {
     let numberUpdated = 0;
     try {
         for (const appId of appIds) {
-            await getSteamAppDataAndSaveIt(appId);
-            numberUpdated++;
+            const success = await getSteamAppDataAndSaveIt(appId);
+            if (success)
+                numberUpdated++;
             await new Promise(f => setTimeout(f, 500));
         }
     } catch (error) {
@@ -93,25 +94,40 @@ async function getSteamAppsDataAndSaveThem(): Promise<void> {
 }
 
 
-async function getSteamAppDataAndSaveIt(appId: string): Promise<void> {
+async function getSteamAppDataAndSaveIt(appId: string): Promise<boolean> {
     const appData = await steam.getAppInformation(appId);
     const webData: SteamAppWebDetails | null = await steam.getAppWebInformation(appId);
 
-    if (appData !== undefined) {
-        const steamApp: SteamAppDto = {
-            id: Number(appId),
-            categories: appData.categories,
-            genres: appData.genres,
-            tags: webData?.tags ?? [],
-            name: appData.name,
-            release_date: appData.releaseDate,
-            review_count: webData?.recommendations ?? appData.recommendations,
-            review_positive_count: webData?.positive_recommendations,
-            review_positive_percent: webData?.percent_positive_recommendations,
-            last_info_updated: new Date()
-        };
-        await upsertSteamApp(steamApp);
+    if (appData === undefined) {
+        let app = await getAppById(appId);
+        if (app != null) {
+            app.last_info_updated = new Date();
+            await upsertSteamApp(app);
+        }
+        return false;
     }
+
+    const steamApp: SteamAppDto = {
+        id: Number(appId),
+        categories: appData.categories,
+        genres: appData.genres,
+        tags: webData?.tags ?? [],
+        name: appData.name,
+        release_date: appData.releaseDate,
+        review_count: webData?.recommendations ?? appData.recommendations,
+        review_positive_count: webData?.positive_recommendations,
+        review_positive_percent: webData?.percent_positive_recommendations,
+        last_info_updated: new Date()
+    };
+    await upsertSteamApp(steamApp);
+    return true;
+
+
+}
+
+
+async function getAppById(appId: string): Promise<SteamAppDto | null> {
+    return await prisma.steamApp.findFirst({where: {id: Number(appId)}});
 }
 
 
@@ -158,15 +174,17 @@ export async function getImportedApps(page: number): Promise<SteamAppDto[]> {
 }
 
 
-// TODO: add values for minimum review count and rate
-// https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries
-
 export async function getFilteredAppsWithUserConfigById(userId: string, configId: string): Promise<FilteredSteamAppDto[]> {
     const config = await getScoreConfig(userId, configId);
-    return await getFilteredAppsWithUserConfig(config.score_config);
+    console.log(configId);
+    console.log(`${config.minimum_reviews}, ${config.positive_reviews_percentage}`);
+    return await getFilteredAppsWithUserConfig(config.score_config, config.minimum_reviews ?? null, config.positive_reviews_percentage ?? null);
 }
 
-export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[]): Promise<FilteredSteamAppDto[]> {
+
+// https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries
+
+export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataConfigDto[], minimum_reviews: number | null, positive_reviews_percentage: number | null): Promise<FilteredSteamAppDto[]> {
     const tagsVal = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.value.toString());
     const tagsWeight = config.filter(ref => ref.type == SteamAppReferenceDataType.TAG).map(ref => ref.score);
 
@@ -210,6 +228,8 @@ export async function getFilteredAppsWithUserConfig(config: UserSteamAppRefDataC
                 ) r_genres on true
         where a.release_date is not null
           and a.release_date < NOW()
+          and (${minimum_reviews == null}::bool or a.review_count >= ${minimum_reviews ?? 0}::numeric)
+          and (${positive_reviews_percentage == null}::bool or a.review_positive_percent >= ${positive_reviews_percentage ?? 0}::numeric)
         order by rating desc
             limit ${limit};`;
 }
